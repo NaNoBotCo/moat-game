@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Moat — The Web of Contacts</title>
+<style>
+  :root{
+    --guild:#f4c430; --law:#5aa9ff; --monk:#ff9a3c;
+    --street:#ff5db1; --unseen:#b98cff; --ink:#eae3ff;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%; background:#0b0716; overflow:hidden;
+    font-family:"Trebuchet MS",Verdana,sans-serif; color:var(--ink);
+    user-select:none; -webkit-user-select:none;}
+  #wrap{position:fixed; inset:0;}
+  canvas{position:absolute; inset:0; width:100%; height:100%; display:block;
+    touch-action:none;}
+  /* --- readout panel --- */
+  #panel{position:absolute; left:0; right:0; bottom:0; max-height:58%;
+    background:linear-gradient(180deg,rgba(20,12,38,.72),rgba(12,7,24,.97));
+    border-top:2px solid rgba(185,140,255,.5);
+    backdrop-filter:blur(6px);
+    padding:16px 18px 20px; transform:translateY(105%);
+    transition:transform .28s cubic-bezier(.2,.9,.25,1); overflow-y:auto;}
+  #panel.up{transform:translateY(0);}
+  #pname{font-size:26px; font-weight:bold; margin:0 0 2px; letter-spacing:.3px;}
+  #pmeta{font-size:15px; opacity:.75; margin:0 0 8px;}
+  #pbond{font-size:17px; margin:0 0 10px;}
+  #pbio{font-size:16px; line-height:1.45; opacity:.92; margin:0 0 10px;}
+  #pwant{font-size:15px; font-style:italic; opacity:.85; margin:0 0 14px;
+    color:#ffe6a6;}
+  .btnrow{display:flex; flex-wrap:wrap; gap:10px;}
+  button.act{flex:1 1 30%; min-width:110px; min-height:58px; font-size:19px;
+    font-weight:bold; color:#160c26; border:0; border-radius:14px;
+    background:var(--ink); box-shadow:0 4px 0 rgba(0,0,0,.35); cursor:pointer;}
+  button.act:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.35);}
+  button.act.talk{background:#ffd34d;}
+  button.act.give{background:#8affc9;}
+  button.act.ask{background:#a9c9ff;}
+  button.act.word{background:#e6b8ff;}
+  button.act.close{background:#43324f; color:var(--ink); flex-basis:100%;
+    box-shadow:0 4px 0 rgba(0,0,0,.5);}
+  .sub{margin-top:12px;}
+  .sub h4{margin:0 0 8px; font-size:14px; opacity:.7; text-transform:uppercase;
+    letter-spacing:1px;}
+  /* --- top ribbon --- */
+  #ribbon{position:absolute; top:0; left:0; right:0; padding:10px 14px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:15px; pointer-events:none;
+    background:linear-gradient(180deg,rgba(11,7,22,.9),rgba(11,7,22,0));}
+  #title{font-weight:bold; font-size:18px; letter-spacing:.5px;}
+  #stand{opacity:.8; text-align:right; line-height:1.35;}
+  /* --- toast --- */
+  #toast{position:absolute; left:50%; top:14%; transform:translateX(-50%);
+    max-width:82%; background:rgba(24,14,44,.95); border:1px solid rgba(185,140,255,.6);
+    border-radius:14px; padding:14px 18px; font-size:16px; line-height:1.45;
+    opacity:0; transition:opacity .3s; pointer-events:none; text-align:center;
+    box-shadow:0 8px 30px rgba(0,0,0,.5);}
+  #toast.show{opacity:1;}
+  #toast .whisper{font-style:italic; color:#d9c2ff;}
+  #hint{position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+    font-size:14px; opacity:.5; pointer-events:none;}
+  #back{position:absolute; left:14px; bottom:12px; font-size:14px;
+    color:#b98cff; text-decoration:none; opacity:.7; padding:8px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="ribbon">
+    <span id="title">✦ The Web of Contacts</span>
+    <span id="stand"></span>
+  </div>
+  <div id="toast"></div>
+  <div id="hint">tap a light to speak with them</div>
+  <a id="back" href="index.html">◂ back to the map</a>
+  <div id="panel">
+    <p id="pname"></p>
+    <p id="pmeta"></p>
+    <p id="pbond"></p>
+    <p id="pbio"></p>
+    <p id="pwant"></p>
+    <div class="btnrow" id="acts"></div>
+    <div class="sub" id="subarea"></div>
+  </div>
+</div>
+<script>
+// ============================================================================
+// The web of contacts — a tap-driven mirror of game/relationships.py.
+// No typing. Big targets. Night-neon, friendly-eerie. Bonds move on 2d6.
+// ============================================================================
+
+// --- bond scale (mirrors relationships.py) ---------------------------------
+const BOND_MIN=-3, BOND_MAX=5;
+const TIERS={"-3":"hostile","-2":"hostile","-1":"wary","0":"a stranger",
+  "1":"an acquaintance","2":"friendly","3":"trusted","4":"close","5":"sworn to you"};
+const tier=b=>TIERS[String(Math.max(BOND_MIN,Math.min(BOND_MAX,b)))];
+const FCOL={guild:"#f4c430",law:"#5aa9ff",monkhood:"#ff9a3c",
+  street:"#ff5db1",unseen:"#b98cff"};
+const FNAME={guild:"Kad Luang guild",law:"police & customs",
+  monkhood:"the sangha",street:"the night roads",unseen:"the unseen"};
+
+// --- the cast (mirrors CONTACTS) -------------------------------------------
+const C={
+  lawan:{name:"Pa Lawan",faction:"guild",where:"Warorot",role:"human",
+    heritage:"Teochew Chinese-Thai gold-shop matriarch",
+    bio:"She runs the quiet side of a Kad Luang gold shop, where amulets change hands and money forgets where it came from.",
+    want:{kind:"food",ref:"khao_soi",note:"A proper khao soi, and she'll talk."},
+    secret:"The Jatukham money doesn't end in gold — it buys silence at the gates. Someone above the guild wants the old Lamphun clay out of the city before the Inthakhin festival.",
+    secretAt:3, hidden:false, x:.16,y:.24,
+    intros:[{to:"marisa",at:2,line:"There's a half-farang girl at the university who reads old clay better than the monks."},
+            {to:"anong",at:3,line:"A sergeant at Tha Phae owes my family years. Be gentle; she's honest."}]},
+  karim:{name:"Haji Karim",faction:"street",where:"Warorot",role:"human",
+    heritage:"Yunnanese Chin Haw Muslim caravan trader",
+    bio:"Third generation of the muleteers who brought tea and jade down from Yunnan. A tea stall by the Ban Haw mosque and every old smuggling track in his head.",
+    want:{kind:"food",ref:"miang",note:"Share miang the old caravan way."},
+    secret:"What leaves by Suan Prung goes north on the mule tracks, not the highway — no scanner watches a goat path. I can show a friend the way.",
+    secretAt:2, hidden:false, x:.34,y:.15,
+    intros:[{to:"seng",at:2,line:"The Shan lantern-maker in Wualai sees the night roads clearer than I do."}]},
+  seng:{name:"Sai Seng",faction:"street",where:"Wualai",role:"human",
+    heritage:"Shan (Tai Yai) lantern-maker",
+    bio:"He folds khom loi lanterns by the hundred for Yi Peng, and his fly highest. He watches the night sky like other men watch the road.",
+    want:{kind:"food",ref:"sai_ua",note:"Northern sausage, shared at his workbench."},
+    secret:"I float a lantern each Yi Peng for a boy who never came home through the dead-gate. Lately mine won't rise — the sky's holding its breath.",
+    secretAt:2, hidden:false, x:.7,y:.17},
+  naruemon:{name:"Naruemon",faction:"street",where:"Wualai",role:"human",
+    heritage:"Hmong silversmith's daughter",
+    bio:"She came down from the hills to sell her father's repoussé on the Saturday walking street. Sharp-eyed about who buys what, and why.",
+    want:{kind:"amulet",ref:"salika",note:"A golden-tongue charm — she's shy of buyers."},
+    secret:"The old temple patterns are going missing from the silver. Someone's buying anything with the guardian's mark — paying triple, melting nothing.",
+    secretAt:3, hidden:false, x:.85,y:.3},
+  marisa:{name:"Marisa",faction:"guild",where:"Nimman / CMU",role:"human",
+    heritage:"mixed Thai-farang antiquities scholar",
+    bio:"Raised between Chiang Mai and abroad, she catalogs votive clay for the university and can date a Hariphunchai tablet by its temper.",
+    want:{kind:"word",ref:"noi",note:"She'd give anything to know what the dead-gate ghost witnessed."},
+    secret:"The pieces surfacing aren't fakes. They're from Wiang Kum Kam — the drowned city is giving up its dead. Each carries the same unfinished yantra.",
+    secretAt:3, hidden:false, x:.5,y:.11,
+    intros:[{to:"ajahn_ket",at:3,line:"The abbot on Doi Suthep let me catalog a reliquary the histories pretend doesn't exist. He'll see you if I vouch."}]},
+  anong:{name:"Sgt. Anong",faction:"law",where:"Tha Phae Gate",role:"police",
+    heritage:"khon mueang police sergeant",
+    bio:"Twenty years on the Tha Phae beat, the only officer who still writes up what she sees. That honesty is why someone wants her looking away.",
+    want:{kind:"amulet",ref:"doi_brew",note:"A quiet bottle of monastery brew for long shifts."},
+    secret:"My orders changed after the rains. Wave through anything marked with a certain sign, lose the paperwork. I hate being made a blind eye.",
+    secretAt:2, hidden:false, x:.14,y:.47},
+  prasit:{name:"Officer Prasit",faction:"law",where:"Chiang Mai Gate",role:"customs",
+    heritage:"superstitious southern-gate customs officer",
+    bio:"He drew the Chiang Mai Gate post and hates it — too near the old ways, too near the dead's road.",
+    want:{kind:"amulet",ref:"takrut",note:"A takrut scroll he can hide under his collar."},
+    secret:"Since the rains the Suan Prung scanners flare at nothing. The old men say the pillar's guardian has stopped answering.",
+    secretAt:2, hidden:false, x:.86,y:.52,
+    intros:[{to:"noi",at:2,line:"Something at the dead-gate says my name in the quiet. You've the tongue for the unseen; I haven't. Go and hear it."}]},
+  ajahn_ket:{name:"Phra Ajahn Ket",faction:"monkhood",where:"Doi Suthep",role:"monk",
+    heritage:"abbot, keeper of a denied reliquary",
+    bio:"Decades of dawns on the mountain have worn him patient and unbluffable. He teaches the old script to those with merit — and keeps what should not be kept.",
+    secret:"We hold a reliquary the histories deny. What was taken from Wiang Kum Kam belongs to the pillar. Return it before Inthakhin, or the city loses its shade for a generation.",
+    secretAt:3, hidden:false, x:.5,y:.37,
+    intros:[{to:"mae_kaew",at:3,line:"Your own line still lights lamps in the old city, child. Kneel at the shrine and speak to them."}]},
+  // --- the unseen, reached only through the graph ---
+  noi:{name:"Noi-who-waits",faction:"unseen",where:"Suan Prung, gate of the dead",role:"phii",
+    heritage:"a phi tai hong at the gate of the dead",
+    bio:"A young runner who died at Suan Prung the night the pillar went quiet, whose lamp no one lit. Not angry. Worse: patient, and she remembers.",
+    secret:"I died here the night the pillar fell silent — and no one lit my lamp. But the dead keep watch. I saw them carry the broken piece out through the dead's own road. They forgot I am not living.",
+    secretAt:3, hidden:true, x:.28,y:.74},
+  mae_kaew:{name:"Mae Kaew",faction:"unseen",where:"the household shrine",role:"ancestor",
+    heritage:"a grandmother of your line",
+    bio:"She keeps the household spirits and the family's long memory, and she will judge you before she helps you — as is her right.",
+    want:{kind:"food",ref:"pad_krapow",note:"Set a plate at the shrine, as a grandchild should."},
+    secret:"The Sao Inthakhin is a promise, child. The Lawa gave their guardian to the city so it would never fall. Someone has broken the promise.",
+    secretAt:3, hidden:true, x:.72,y:.74},
+  inthakhin:{name:"Guardian of the Pillar",faction:"unseen",where:"the Sao Inthakhin",role:"deva",
+    heritage:"the deva sworn to the city pillar",
+    bio:"The shining one beneath the pillar since Kawila set it at Wat Chedi Luang. It has not spoken since the rains — until, at last, you are one it will speak to.",
+    want:{kind:"amulet",ref:"phra_rod",note:"Return what was broken and taken, before the festival lanterns rise."},
+    secret:"Return the stolen piece to the pillar before the Inthakhin flowers are laid, and the guardians turn their faces back to the city. Fail, and Chiang Mai stands a generation in the sun with no shade.",
+    secretAt:1, hidden:true, x:.5,y:.6, apex:true},
+};
+const APEX={inthakhin:[["noi",3],["mae_kaew",3],["ajahn_ket",3]]};
+
+// --- player state (the web layer's own save-less demo state) ---------------
+const S={
+  known:new Set(), bonds:{}, secretsHeard:new Set(), wantsMet:new Set(),
+  // a starter pouch so 'give' is playable without the full economy
+  pouch:{khao_soi:1,miang:1,sai_ua:1,salika:1,doi_brew:1,takrut:1,pad_krapow:1,phra_rod:1},
+};
+const ITEMS={khao_soi:"Khao Soi",miang:"Miang",sai_ua:"Sai Ua",salika:"Salika Charm",
+  doi_brew:"Monastery Brew",takrut:"Takrut Scroll",pad_krapow:"Pad Krapow",phra_rod:"Phra Rod"};
+function discover(k){ if(S.known.has(k))return false; S.known.add(k); if(!(k in S.bonds))S.bonds[k]=0; return true; }
+function bondOf(k){ return S.bonds[k]||0; }
+function adjust(k,d){ S.bonds[k]=Math.max(BOND_MIN,Math.min(BOND_MAX,bondOf(k)+d)); return S.bonds[k]; }
+// you begin with a handful of entry points; the rest of the web — living and
+// unseen alike — is reached only by being vouched for. Networking = growth.
+const SEED=["lawan","karim","naruemon","prasit"];
+SEED.forEach(discover);
+
+function availableIntros(){
+  const out=[];
+  for(const k of S.known) for(const it of (C[k].intros||[]))
+    if(bondOf(k)>=it.at && !S.known.has(it.to)) out.push([k,it.to]);
+  for(const [t,reqs] of Object.entries(APEX))
+    if(!S.known.has(t) && reqs.every(([rk,rb])=>S.known.has(rk)&&bondOf(rk)>=rb))
+      out.push(["*",t]);
+  return out;
+}
+function standing(){
+  const o={}; for(const f in FNAME)o[f]=0;
+  for(const k of S.known)o[C[k].faction]+=bondOf(k);
+  return o;
+}
+
+// ============================================================================
+// rendering
+// ============================================================================
+const cv=document.getElementById("c"), ctx=cv.getContext("2d");
+let Wp=0,Hp=0,DPR=1;
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  Wp=window.innerWidth; Hp=window.innerHeight;
+  cv.width=Wp*DPR; cv.height=Hp*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener("resize",resize); resize();
+
+function nodePos(k){ const c=C[k]; return {x:c.x*Wp, y:c.y*Hp}; }
+function nodeR(k){ return 20 + Math.max(0,bondOf(k))*3.2; }
+
+// floating phii motes for atmosphere
+const motes=Array.from({length:26},()=>({x:Math.random(),y:Math.random(),
+  s:.2+Math.random()*.6, ph:Math.random()*7}));
+
+let t=0, selected=null;
+function draw(){
+  t+=0.016;
+  ctx.clearRect(0,0,Wp,Hp);
+  // night gradient
+  const g=ctx.createRadialGradient(Wp*.5,Hp*.5,40,Wp*.5,Hp*.5,Math.max(Wp,Hp)*.75);
+  g.addColorStop(0,"#160d2c"); g.addColorStop(1,"#080512");
+  ctx.fillStyle=g; ctx.fillRect(0,0,Wp,Hp);
+  // drifting motes
+  for(const m of motes){
+    const x=(m.x+0.02*Math.sin(t*0.3+m.ph))*Wp;
+    const y=((m.y+ t*0.006*m.s)%1)*Hp;
+    ctx.globalAlpha=0.15+0.15*Math.sin(t+m.ph);
+    ctx.fillStyle="#b98cff"; ctx.beginPath();
+    ctx.arc(x,y,1.6*m.s+0.8,0,7); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // edges (introductions) — dashed if not yet opened
+  const intros=availableIntros();
+  const openSet=new Set(intros.map(([a,b])=>a+">"+b));
+  for(const k of Object.keys(C)){
+    if(!S.known.has(k)) continue;   // you only see doors from people you know
+    for(const it of (C[k].intros||[])){
+      drawEdge(k,it.to, true, S.known.has(it.to), openSet.has(k+">"+it.to));
+    }
+  }
+  // apex spokes
+  if(!S.known.has("inthakhin")){
+    for(const [rk] of APEX.inthakhin)
+      if(S.known.has(rk)) drawEdge(rk,"inthakhin",true,false,
+        intros.some(([a,b])=>b==="inthakhin"));
+  }
+
+  // nodes
+  for(const k of Object.keys(C)){
+    const known=S.known.has(k);
+    const reachable=intros.some(([a,b])=>b===k);
+    if(!known && !reachable) continue; // truly hidden until a door appears
+    drawNode(k, known, reachable);
+  }
+
+  // ribbon standing
+  const st=standing();
+  document.getElementById("stand").innerHTML=
+    Object.entries(st).filter(([f,v])=>v!==0)
+      .map(([f,v])=>`<span style="color:${FCOL[f]}">${FNAME[f]}: ${v>0?"+":""}${v}</span>`)
+      .join("<br>") || "<span style='opacity:.5'>no standing yet</span>";
+
+  requestAnimationFrame(draw);
+}
+
+function drawEdge(a,b,aKnown,bKnown,open){
+  const pa=nodePos(a), pb=nodePos(b);
+  ctx.save();
+  if(open){ ctx.strokeStyle="rgba(230,184,255,.85)"; ctx.lineWidth=2.4;
+    ctx.setLineDash([2,8]); ctx.lineDashOffset=-t*22; }
+  else if(aKnown&&bKnown){ ctx.strokeStyle="rgba(185,140,255,.35)"; ctx.lineWidth=1.6; ctx.setLineDash([]); }
+  else { ctx.strokeStyle="rgba(120,100,160,.18)"; ctx.lineWidth=1.2; ctx.setLineDash([2,10]); }
+  ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
+  ctx.restore();
+}
+
+function drawNode(k, known, reachable){
+  const c=C[k], p=nodePos(k), col=FCOL[c.faction];
+  const r=known?nodeR(k):18;
+  const pulse=known?(0.5+0.5*Math.sin(t*1.5+p.x)):(0.4+0.4*Math.sin(t*3));
+  const isSel=selected===k;
+  // glow
+  const glow=ctx.createRadialGradient(p.x,p.y,2,p.x,p.y,r*3.2);
+  glow.addColorStop(0, hexA(col, known?0.55:0.28));
+  glow.addColorStop(1, hexA(col,0));
+  ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(p.x,p.y,r*3.2,0,7); ctx.fill();
+  // apex extra halo
+  if(c.apex && !known){ ctx.strokeStyle=hexA("#ffe6a6",0.4+0.4*pulse); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(p.x,p.y,r+10+3*pulse,0,7); ctx.stroke(); }
+  // body
+  ctx.beginPath(); ctx.arc(p.x,p.y,r,0,7);
+  ctx.fillStyle=known?hexA(col,0.9):"rgba(30,20,48,.85)";
+  ctx.fill();
+  ctx.lineWidth=isSel?4:2.4;
+  ctx.strokeStyle=isSel?"#fff":hexA(col, known?1:0.8);
+  ctx.stroke();
+  // face — friendly-eerie: two eyes, tiny for unseen
+  if(known){
+    ctx.fillStyle="#160c26";
+    const ey=c.faction==="unseen"?2.0:2.6, dx=r*0.28;
+    ctx.beginPath(); ctx.arc(p.x-dx,p.y-2,ey,0,7); ctx.arc(p.x+dx,p.y-2,ey,0,7); ctx.fill();
+    // little smile
+    ctx.strokeStyle="#160c26"; ctx.lineWidth=1.8; ctx.beginPath();
+    ctx.arc(p.x,p.y+1,r*0.34,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  } else {
+    ctx.fillStyle=hexA(col,0.9); ctx.font="bold 20px Trebuchet MS";
+    ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("?",p.x,p.y+1);
+  }
+  // secret-held marker
+  if(S.secretsHeard.has(k)){
+    ctx.fillStyle="#ffe6a6"; ctx.beginPath();
+    ctx.arc(p.x+r*0.72,p.y-r*0.72,4,0,7); ctx.fill();
+  }
+  // label
+  ctx.fillStyle=known?"#eae3ff":hexA(col,0.85);
+  ctx.font=(known?"bold ":"")+"14px Trebuchet MS";
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  ctx.fillText(known?c.name:"a door opens…", p.x, p.y+r+6);
+  if(known){ ctx.font="12px Trebuchet MS"; ctx.fillStyle="rgba(234,227,255,.6)";
+    ctx.fillText(tier(bondOf(k)), p.x, p.y+r+22); }
+}
+
+function hexA(hex,a){
+  if(hex[0]!=="#") return hex;
+  const n=parseInt(hex.slice(1),16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+draw();
+
+// ============================================================================
+// interaction
+// ============================================================================
+function hitTest(mx,my){
+  const intros=availableIntros();
+  let best=null,bd=1e9;
+  for(const k of Object.keys(C)){
+    const known=S.known.has(k), reachable=intros.some(([a,b])=>b===k);
+    if(!known&&!reachable) continue;
+    const p=nodePos(k), r=(known?nodeR(k):18)+12;
+    const d=Math.hypot(mx-p.x,my-p.y);
+    if(d<r && d<bd){ bd=d; best=k; }
+  }
+  return best;
+}
+cv.addEventListener("pointerdown",e=>{
+  const k=hitTest(e.clientX,e.clientY);
+  if(k){ selected=k; openPanel(k); }
+  else { selected=null; closePanel(); }
+});
+
+// --- 2d6 (mirrors dice.roll: STRONG 10+, WEAK 7-9, MISS 6-) ----------------
+function d6(){ return 1+Math.floor(Math.random()*6); }
+function roll2(mod){ const a=d6(),b=d6(),tot=a+b+mod;
+  return {a,b,tot,out: tot>=10?"STRONG":tot>=7?"WEAK":"MISS"}; }
+// a light stand-in for the persuasion levers per audience
+const ROLEMOD={human:1,police:0,customs:0,monk:0,phii:-1,ancestor:-1,deva:-2};
+
+const panel=document.getElementById("panel");
+function openPanel(k){
+  const c=C[k];
+  document.getElementById("pname").textContent=c.name;
+  document.getElementById("pmeta").innerHTML=
+    `<span style="color:${FCOL[c.faction]}">●</span> ${c.heritage} · ${c.where}`;
+  document.getElementById("pbond").textContent="Between you: "+tier(bondOf(k))
+    +"  ("+bondOf(k)+")";
+  document.getElementById("pbio").textContent=c.bio;
+  const wantEl=document.getElementById("pwant");
+  if(c.want && !S.wantsMet.has(k)) wantEl.textContent="They seem to want: "+c.want.note;
+  else wantEl.textContent="";
+  renderActs(k);
+  document.getElementById("subarea").innerHTML="";
+  panel.classList.add("up");
+  document.getElementById("hint").style.opacity=0;
+}
+function closePanel(){ selected=null; panel.classList.remove("up"); }
+
+function renderActs(k){
+  const c=C[k], acts=document.getElementById("acts"); acts.innerHTML="";
+  const mk=(cls,label,fn)=>{ const b=document.createElement("button");
+    b.className="act "+cls; b.textContent=label; b.onclick=fn; acts.appendChild(b); };
+  mk("talk","Talk",()=>doTalk(k));
+  mk("give","Give",()=>showGive(k));
+  // share a word: this contact wants a word you may already carry
+  if(c.want && c.want.kind==="word" && !S.wantsMet.has(k))
+    mk("word","Tell",()=>doWord(k));
+  // follow introductions this contact can open
+  const doors=availableIntros().filter(([a])=>a===k);
+  if(doors.length) mk("ask","Ask ▸",()=>showDoors(k,doors));
+  mk("close","Close",closePanel);
+}
+
+function doTalk(k){
+  const c=C[k];
+  const r=roll2(ROLEMOD[c.role]||0);
+  const before=tier(bondOf(k));
+  const delta=r.out==="STRONG"?2:r.out==="WEAK"?1:-1;
+  const b=adjust(k,delta);
+  let line;
+  if(delta>0) line = (tier(b)!==before)?`${c.name} warms to you — now ${tier(b)}.`
+                                       :`${c.name} hears you out.`;
+  else line=`You misjudge ${c.name}; the mood cools to ${tier(b)}.`;
+  let whisper="";
+  const rev=maybeSecret(k); if(rev) whisper=rev;
+  toast(`🎲 ${r.a}+${r.b}${r.tot-r.a-r.b?(( (r.tot-r.a-r.b)>=0?"+":"")+(r.tot-r.a-r.b)):""} = <b>${r.tot}</b> · ${r.out}<br>${line}`, whisper);
+  refresh(k);
+}
+function showGive(k){
+  const sub=document.getElementById("subarea");
+  const have=Object.keys(S.pouch).filter(i=>S.pouch[i]>0);
+  if(!have.length){ sub.innerHTML="<h4>Your pouch is empty.</h4>"; return; }
+  sub.innerHTML="<h4>Give from your pouch</h4>";
+  const row=document.createElement("div"); row.className="btnrow";
+  for(const i of have){ const b=document.createElement("button");
+    b.className="act give"; b.textContent=ITEMS[i];
+    b.onclick=()=>doGive(k,i); row.appendChild(b); }
+  sub.appendChild(row);
+}
+function doGive(k,item){
+  const c=C[k]; S.pouch[item]--;
+  const wanted = c.want && (c.want.kind==="food"||c.want.kind==="amulet")
+                 && c.want.ref===item && !S.wantsMet.has(k);
+  let line;
+  if(wanted){ S.wantsMet.add(k); adjust(k,2);
+    line=`You give ${c.name} the ${ITEMS[item]} — exactly what they hoped for. It lands like a promise kept. Now ${tier(bondOf(k))}.`; }
+  else { adjust(k,1);
+    line=`You give ${c.name} the ${ITEMS[item]}. A small kindness, noted. Now ${tier(bondOf(k))}.`; }
+  const rev=maybeSecret(k);
+  toast(line, rev);
+  refresh(k);
+}
+function doWord(k){
+  const c=C[k], src=c.want.ref;
+  if(!S.secretsHeard.has(src)){
+    toast(`You've nothing to carry yet — you'd need ${C[src].name}'s trust and their tale first.`);
+    return;
+  }
+  S.wantsMet.add(k); adjust(k,2);
+  const rev=maybeSecret(k);
+  toast(`You carry ${C[src].name}'s words to ${c.name}. Something long-stuck turns over. Now ${tier(bondOf(k))}.`, rev);
+  refresh(k);
+}
+function showDoors(k,doors){
+  const sub=document.getElementById("subarea");
+  sub.innerHTML="<h4>They can open a door</h4>";
+  for(const [a,to] of doors){
+    const it=(C[a].intros||[]).find(x=>x.to===to);
+    const line=to==="inthakhin"
+      ? "The three you've trusted lean close: it is time to stand at the pillar."
+      : (it?it.line:"");
+    const card=document.createElement("div"); card.style.marginBottom="10px";
+    card.innerHTML=`<p style="font-style:italic;opacity:.85;margin:0 0 6px">“${line}”</p>`;
+    const b=document.createElement("button"); b.className="act ask";
+    b.textContent="Be introduced to "+ (C[to].hidden&&!S.known.has(to)?"the unseen":C[to].name.split(" ")[0]);
+    b.onclick=()=>doIntro(to);
+    card.appendChild(b); sub.appendChild(card);
+  }
+}
+function doIntro(to){
+  if(S.known.has(to)) return;
+  if(!availableIntros().some(([a,b])=>b===to)){ toast("No one has opened that door for you yet."); return; }
+  discover(to); const c=C[to];
+  toast(`A door opens. You are introduced to ${c.name} — ${c.heritage}.`,
+        c.apex?"“…and the pillar stirs. It knows you now.”":"");
+  selected=to; openPanel(to);
+}
+
+function maybeSecret(k){
+  const c=C[k];
+  if(c.secret && !S.secretsHeard.has(k) && bondOf(k)>=c.secretAt){
+    S.secretsHeard.add(k);
+    return `“${c.secret}”`;
+  }
+  return "";
+}
+function refresh(k){
+  // repaint panel numbers & buttons after a change
+  if(selected===k) openPanel(k);
+}
+
+// --- toast ------------------------------------------------------------------
+let toastTimer=null;
+function toast(html, whisper){
+  const el=document.getElementById("toast");
+  el.innerHTML = html + (whisper?`<div class="whisper" style="margin-top:8px">${whisper}</div>`:"");
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove("show"), whisper?6500:3200);
+}
+</script>
+</body>
+</html>

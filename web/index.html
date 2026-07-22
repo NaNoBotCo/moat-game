@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Moat — Chiang Mai</title>
+<style>
+  :root{ --gate:#ffd34d; --water:#5ad1ff; --pillar:#ffe6a6; --ink:#eae3ff;
+    --outer:#b98cff; --city:#ff9a3c; }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%; background:#0b0716; overflow:hidden;
+    font-family:"Trebuchet MS",Verdana,sans-serif; color:var(--ink);
+    user-select:none; -webkit-user-select:none;}
+  #wrap{position:fixed; inset:0;}
+  canvas{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none;}
+  #ribbon{position:absolute; top:0; left:0; right:0; padding:12px 16px;
+    display:flex; justify-content:space-between; align-items:baseline;
+    pointer-events:none;
+    background:linear-gradient(180deg,rgba(11,7,22,.92),rgba(11,7,22,0));}
+  #title{font-weight:bold; font-size:20px; letter-spacing:.5px;}
+  #title .th{color:var(--pillar); margin-right:8px; font-size:22px;}
+  #sub{opacity:.6; font-size:13px;}
+  #hint{position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+    font-size:14px; opacity:.5; pointer-events:none; text-align:center;}
+  /* --- place panel --- */
+  #panel{position:absolute; left:0; right:0; bottom:0; max-height:60%;
+    background:linear-gradient(180deg,rgba(20,12,38,.72),rgba(12,7,24,.98));
+    border-top:2px solid rgba(185,140,255,.5); backdrop-filter:blur(6px);
+    padding:16px 18px 20px; transform:translateY(105%);
+    transition:transform .28s cubic-bezier(.2,.9,.25,1); overflow-y:auto;}
+  #panel.up{transform:translateY(0);}
+  #pname{font-size:26px; font-weight:bold; margin:0 0 2px;}
+  #pmeta{font-size:15px; opacity:.75; margin:0 0 10px;}
+  #pblurb{font-size:16px; line-height:1.45; opacity:.92; margin:0 0 10px;}
+  #ppeople{font-size:15px; margin:0 0 14px; color:#d9c2ff;}
+  .btnrow{display:flex; flex-wrap:wrap; gap:10px;}
+  button.act{flex:1 1 44%; min-width:150px; min-height:60px; font-size:19px;
+    font-weight:bold; color:#160c26; border:0; border-radius:14px;
+    background:var(--ink); box-shadow:0 4px 0 rgba(0,0,0,.35); cursor:pointer;}
+  button.act:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.35);}
+  button.act.cross{background:#ffd34d;}
+  button.act.web{background:#c9a9ff;}
+  button.act.soon{background:#3a2c4e; color:#b9a8d6; box-shadow:0 4px 0 rgba(0,0,0,.5);}
+  button.act.close{background:#43324f; color:var(--ink); flex-basis:100%;
+    box-shadow:0 4px 0 rgba(0,0,0,.5);}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="ribbon">
+    <span id="title"><span class="th">เชียงใหม่</span>Chiang Mai · 2076</span>
+    <span id="sub">tap a place to go there</span>
+  </div>
+  <div id="hint">the square is the moat · its gates are the customs crossings</div>
+  <div id="panel">
+    <p id="pname"></p>
+    <p id="pmeta"></p>
+    <p id="pblurb"></p>
+    <p id="ppeople"></p>
+    <div class="btnrow" id="acts"></div>
+  </div>
+</div>
+<script>
+// ============================================================================
+// The hub map — the square moat, its five gates, and the Lanna world around it.
+// Tap a gate to cross (the traffic subgame); tap anywhere to reach its people
+// (the web of contacts). Unbuilt subgames are marked honestly as "soon".
+// Grounded in game/world.py.
+// ============================================================================
+
+// people by district, mirroring relationships.py `where`
+const PEOPLE={
+  warorot:["Pa Lawan","Haji Karim"], wualai:["Sai Seng","Naruemon"],
+  nimman:["Marisa"], tha_phae:["Sgt. Anong"], chiang_mai_gate:["Officer Prasit"],
+  doi_suthep:["Phra Ajahn Ket"], suan_prung:["Noi-who-waits (unseen)"],
+  old_city:["Mae Kaew (ancestor)","the Guardian of the Pillar"],
+};
+// offset from city center, in units of the moat's half-size (ox=east, oy=south)
+const PLACES=[
+  // --- the walled heart ---
+  {key:"old_city", name:"Sao Inthakhin — the City Pillar", kind:"pillar",
+   ox:0, oy:0, meta:"the heart of the old city, Wat Chedi Luang",
+   blurb:"Kawila's city pillar, the spine of the whole matter. Since the rains its guardian has not spoken — and pieces of drowned Wiang Kum Kam are surfacing, each marked with the same unfinished yantra."},
+  // --- the five gates (clockwise) ---
+  {key:"chang_phuak", name:"Chang Phuak Gate", kind:"gate", ox:0, oy:-1,
+   meta:"the northern Elephant Gate",
+   blurb:"Late-night khao kha moo stalls and a sleepy customs post — but the queue hides many eyes."},
+  {key:"tha_phae", name:"Tha Phae Gate", kind:"gate", ox:1, oy:0,
+   meta:"the eastern gate, mouth of the old city",
+   blurb:"By 2076 a lane of scanners funnels every crossing toward the river."},
+  {key:"chiang_mai_gate", name:"Chiang Mai Gate", kind:"gate", ox:0, oy:1,
+   meta:"the southern gate",
+   blurb:"Flanked by the Pratu Chiang Mai market — flowers and curry masking the smell of scrutiny."},
+  {key:"suan_prung", name:"Suan Prung Gate", kind:"gate", ox:-0.72, oy:0.72,
+   meta:"the south-western gate of the dead",
+   blurb:"For centuries the dead left the city this way. Its officers are as superstitious as they are bored, and lately the scanners flare at nothing."},
+  {key:"suan_dok", name:"Suan Dok Gate", kind:"gate", ox:-1, oy:0,
+   meta:"the western gate toward the mountain",
+   blurb:"White royal stupas beyond the scanners; the road to Doi Suthep begins here."},
+  // --- outer city ---
+  {key:"kad_chang_phuak", name:"Kad Chang Phuak", kind:"outer", ox:-1.0, oy:-2.0,
+   meta:"night market north of the wall", feat:["cook"],
+   blurb:"The famous khao kha moo stall in its cowboy hat, sizzling sai ua, a bus yard for the whole north. Cheap food, cheaper eyes."},
+  {key:"warorot", name:"Warorot Market (Kad Luang)", kind:"outer", ox:2.25, oy:-0.15,
+   meta:"the great riverside bazaar", feat:["market","learn:Charcha"],
+   blurb:"Gold shops, dried goods, and the traders' guild who can move anything for a cut."},
+  {key:"ping_river", name:"Ping Riverside", kind:"outer", ox:2.7, oy:0.7,
+   meta:"jetties and long-tail boats", feat:["route"],
+   blurb:"Where the gates fail, the river runners succeed — for a price and a risk."},
+  {key:"night_bazaar", name:"Night Bazaar (Chang Klan)", kind:"outer", ox:1.7, oy:1.7,
+   meta:"Chang Klan Road after dark", feat:["market","learn:Mahaniyom"],
+   blurb:"A river of stalls and buyers who pay premium for a charm with a story."},
+  {key:"wualai", name:"Wualai — Silver Road", kind:"outer", ox:-0.15, oy:2.15,
+   meta:"the silversmiths' Saturday street", feat:["market","learn:Mudra"],
+   blurb:"Hammers have beaten temple repoussé here for generations; buyers who came for silver leave with charms."},
+  {key:"nimman", name:"Nimman & CMU", kind:"outer", ox:-2.3, oy:0.2,
+   meta:"cafés below the mountain gate", feat:["market","learn:Mahaniyom"],
+   blurb:"Wat Suan Dok's white stupas, the university's crowds, and the Khruba Srivichai road climbing toward Doi Suthep."},
+  {key:"doi_suthep", name:"Doi Suthep", kind:"outer", ox:-2.35, oy:-1.55,
+   meta:"the mountain temple", feat:["learn:Aksorn","learn:Saiyasat","learn:Spirit-speech"],
+   blurb:"Wat Phra That's golden chedi crowns the forest. The monks consecrate amulets, grow the potion-herbs, and teach the old script to those with the merit to learn."},
+  // --- greater Lanna (roads out) ---
+  {key:"lamphun", name:"Lamphun (Hariphunchai)", kind:"city", ox:0.4, oy:2.9,
+   meta:"the old Mon city · by train", feat:["travel"],
+   blurb:"Older even than Lan Na. Birthplace of the revered Phra Rod; scholars here still read the ancient hand."},
+  {key:"lampang", name:"Lampang", kind:"city", ox:2.5, oy:2.3,
+   meta:"teak shophouses and horse-carriages", feat:["travel","cook"],
+   blurb:"Wat Phra That Lampang Luang guards the plain; the kilns and the cooks here are famous."},
+  {key:"chiang_rai", name:"Chiang Rai", kind:"city", ox:1.1, oy:-3.0,
+   meta:"up the road that always sucks", feat:["travel"],
+   blurb:"Mangrai's first capital, up the punishing mountain road. No train runs north — yet."},
+  {key:"golden_triangle", name:"Golden Triangle (Sop Ruak)", kind:"city", ox:2.5, oy:-2.4,
+   meta:"where three borders blur", feat:["route"],
+   blurb:"Chiang Saen's ruins watch a river that has moved contraband for centuries."},
+];
+const P=Object.fromEntries(PLACES.map(p=>[p.key,p]));
+const FEATLABEL={cook:"🍳 Cook here",market:"🛒 Market",route:"🛶 Smuggle route",
+  travel:"🛵 Travel here"};
+
+// ============================================================================
+const cv=document.getElementById("c"), ctx=cv.getContext("2d");
+let Wp,Hp,DPR,cx,cy,m;
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  Wp=innerWidth; Hp=innerHeight; cv.width=Wp*DPR; cv.height=Hp*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  cx=Wp*0.5; cy=Hp*0.47; m=Math.min(Wp,Hp)*0.155;
+}
+addEventListener("resize",resize); resize();
+
+function pos(p){
+  const marg=54;
+  let x=cx+p.ox*m, y=cy+p.oy*m;
+  return {x:Math.max(marg,Math.min(Wp-marg,x)), y:Math.max(marg+40,Math.min(Hp-marg,y))};
+}
+
+// atmosphere: drifting Yi Peng lanterns + phii motes
+const lanterns=Array.from({length:9},()=>({x:Math.random(),y:Math.random(),
+  s:.7+Math.random()*.8, sp:.15+Math.random()*.25, ph:Math.random()*7}));
+const motes=Array.from({length:22},()=>({x:Math.random(),y:Math.random(),
+  s:.2+Math.random()*.6, ph:Math.random()*7}));
+
+let t=0, selected=null;
+function draw(){
+  t+=0.016;
+  const g=ctx.createRadialGradient(cx,cy,30,cx,cy,Math.max(Wp,Hp)*0.8);
+  g.addColorStop(0,"#170e2e"); g.addColorStop(1,"#080512");
+  ctx.fillStyle=g; ctx.fillRect(0,0,Wp,Hp);
+
+  // rising lanterns
+  for(const L of lanterns){
+    const x=(L.x+0.02*Math.sin(t*0.3+L.ph))*Wp;
+    let y=((L.y - t*0.01*L.sp)%1); if(y<0)y+=1; y*=Hp;
+    ctx.globalAlpha=0.55; ctx.fillStyle="#ffb36b";
+    ctx.beginPath(); ctx.ellipse(x,y,3.2*L.s,4.4*L.s,0,0,7); ctx.fill();
+    ctx.globalAlpha=0.16; ctx.beginPath(); ctx.arc(x,y,10*L.s,0,7); ctx.fill();
+  }
+  for(const mo of motes){
+    const x=(mo.x+0.02*Math.sin(t*0.3+mo.ph))*Wp, y=((mo.y+t*0.005*mo.s)%1)*Hp;
+    ctx.globalAlpha=0.12+0.12*Math.sin(t+mo.ph); ctx.fillStyle="#b98cff";
+    ctx.beginPath(); ctx.arc(x,y,1.4*mo.s+0.7,0,7); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // roads to the Lanna cities (dashed; Chiang Rai road "sucks" = rougher dash)
+  for(const p of PLACES){ if(p.kind!=="city") continue;
+    const a=pos(p); ctx.save();
+    ctx.strokeStyle="rgba(255,154,60,.35)"; ctx.lineWidth=2;
+    ctx.setLineDash(p.key==="chiang_rai"?[4,10]:[6,7]); ctx.lineDashOffset=-t*14;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(a.x,a.y); ctx.stroke(); ctx.restore();
+  }
+
+  drawMoat();
+
+  // outer district spokes
+  for(const p of PLACES){ if(p.kind!=="outer") continue;
+    const a=pos(p); ctx.save();
+    ctx.strokeStyle="rgba(185,140,255,.22)"; ctx.lineWidth=1.4; ctx.setLineDash([2,8]);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(a.x,a.y); ctx.stroke(); ctx.restore();
+  }
+
+  for(const p of PLACES) drawPlace(p);
+  requestAnimationFrame(draw);
+}
+
+function drawMoat(){
+  // the square moat ring + walled interior
+  const r=14;
+  ctx.save();
+  // water glow
+  ctx.shadowColor="rgba(90,209,255,.5)"; ctx.shadowBlur=18;
+  ctx.strokeStyle="rgba(90,209,255,.8)"; ctx.lineWidth=7;
+  roundRect(cx-m,cy-m,2*m,2*m,r); ctx.stroke();
+  ctx.shadowBlur=0;
+  // interior fill
+  ctx.fillStyle="rgba(30,22,54,.55)"; roundRect(cx-m+6,cy-m+6,2*m-12,2*m-12,r-4); ctx.fill();
+  ctx.restore();
+  // jaeng corners
+  for(const [dx,dy,nm] of [[-1,-1,"Hua Lin"],[1,-1,"Si Phum"],[1,1,"Katam"],[-1,1,"Ku Ruang"]]){
+    const x=cx+dx*m, y=cy+dy*m;
+    ctx.fillStyle="rgba(90,209,255,.9)"; ctx.beginPath(); ctx.arc(x,y,5,0,7); ctx.fill();
+    ctx.fillStyle="rgba(200,230,255,.45)"; ctx.font="10px Trebuchet MS";
+    ctx.textAlign="center"; ctx.textBaseline=dy<0?"bottom":"top";
+    ctx.fillText("จ."+nm, x+dx*10, y+dy*10);
+  }
+}
+
+function drawPlace(p){
+  const a=pos(p), sel=selected===p.key;
+  if(p.kind==="pillar"){
+    const pulse=0.5+0.5*Math.sin(t*1.4);
+    const gl=ctx.createRadialGradient(a.x,a.y,2,a.x,a.y,46);
+    gl.addColorStop(0,"rgba(255,230,166,"+(0.5+0.3*pulse)+")"); gl.addColorStop(1,"rgba(255,230,166,0)");
+    ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(a.x,a.y,46,0,7); ctx.fill();
+    // little pillar/chedi glyph
+    ctx.fillStyle="#ffe6a6"; ctx.beginPath();
+    ctx.moveTo(a.x,a.y-16); ctx.lineTo(a.x+8,a.y+10); ctx.lineTo(a.x-8,a.y+10); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=sel?"#fff":"rgba(255,230,166,.9)"; ctx.lineWidth=sel?3:1.5;
+    ctx.beginPath(); ctx.arc(a.x,a.y,20,0,7); ctx.stroke();
+    label(a,"Sao Inthakhin",22,"#ffe6a6",true);
+    return;
+  }
+  let col = p.kind==="gate"?"#ffd34d" : p.kind==="city"?"#ff9a3c" : "#b98cff";
+  const known = PEOPLE[p.key]&&PEOPLE[p.key].length;
+  const r = p.kind==="gate"?15 : p.kind==="city"?12 : 14;
+  const gl=ctx.createRadialGradient(a.x,a.y,1,a.x,a.y,r*2.8);
+  gl.addColorStop(0,hexA(col,.5)); gl.addColorStop(1,hexA(col,0));
+  ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(a.x,a.y,r*2.8,0,7); ctx.fill();
+  if(p.kind==="gate"){ // gate niche = little arch
+    ctx.fillStyle=hexA(col,.92);
+    roundRect(a.x-r,a.y-r,2*r,2*r,6); ctx.fill();
+    ctx.fillStyle="#160c26"; roundRect(a.x-r*0.5,a.y-r*0.4,r,r*0.9,4,true); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(a.x,a.y,r,0,7); ctx.fillStyle=hexA(col,.9); ctx.fill();
+  }
+  ctx.lineWidth=sel?4:2.2; ctx.strokeStyle=sel?"#fff":hexA(col,1);
+  if(p.kind!=="gate"){ ctx.beginPath(); ctx.arc(a.x,a.y,r,0,7); ctx.stroke(); }
+  else { roundRect(a.x-r,a.y-r,2*r,2*r,6); ctx.stroke(); }
+  // person indicator
+  if(known){ ctx.fillStyle="#ffe6a6"; ctx.beginPath();
+    ctx.arc(a.x+r*0.8,a.y-r*0.8,4,0,7); ctx.fill(); }
+  label(a, shortName(p), r+6, known?"#eae3ff":hexA(col,.85), p.kind==="gate");
+}
+function shortName(p){
+  return p.name.split(" — ")[0].split(" (")[0];
+}
+function label(a,text,dy,col,bold){
+  ctx.fillStyle=col; ctx.font=(bold?"bold ":"")+"13px Trebuchet MS";
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  ctx.fillText(text, a.x, a.y+dy);
+}
+function roundRect(x,y,w,h,r,inner){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function hexA(hex,al){ const n=parseInt(hex.slice(1),16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${al})`; }
+draw();
+
+// ============================================================================
+// interaction
+// ============================================================================
+function hitTest(mx,my){
+  let best=null,bd=1e9;
+  for(const p of PLACES){ const a=pos(p);
+    const r=(p.kind==="gate"?15:p.kind==="pillar"?20:14)+16;
+    const d=Math.hypot(mx-a.x,my-a.y);
+    if(d<r && d<bd){ bd=d; best=p.key; }
+  }
+  return best;
+}
+cv.addEventListener("pointerdown",e=>{
+  const k=hitTest(e.clientX,e.clientY);
+  if(k){ selected=k; openPanel(k); } else { selected=null; closePanel(); }
+});
+
+const panel=document.getElementById("panel");
+function openPanel(key){
+  const p=P[key];
+  document.getElementById("pname").textContent=p.name;
+  document.getElementById("pmeta").textContent=p.meta;
+  document.getElementById("pblurb").textContent=p.blurb;
+  const ppl=PEOPLE[key];
+  document.getElementById("ppeople").textContent=
+    ppl&&ppl.length ? "Here: "+ppl.join(" · ") : "";
+  const acts=document.getElementById("acts"); acts.innerHTML="";
+  const mk=(cls,label,fn)=>{ const b=document.createElement("button");
+    b.className="act "+cls; b.innerHTML=label; b.onclick=fn; acts.appendChild(b); };
+  if(p.kind==="gate") mk("cross","▶ Cross the moat",()=>location.href="traffic.html");
+  // the web of contacts is reachable from anywhere with people, and from the pillar
+  if((ppl&&ppl.length) || p.kind==="pillar")
+    mk("web","✦ Web of contacts",()=>location.href="contacts.html");
+  for(const f of (p.feat||[])){
+    if(f.startsWith("learn:")) mk("soon","📖 Learn "+f.slice(6)+" · soon",()=>soon("learning"));
+    else if(FEATLABEL[f]) mk("soon",FEATLABEL[f]+" · soon",()=>soon(f));
+  }
+  mk("close","Close",closePanel);
+  panel.classList.add("up"); document.getElementById("hint").style.opacity=0;
+}
+function closePanel(){ selected=null; panel.classList.remove("up"); }
+function soon(what){
+  const el=document.getElementById("hint");
+  el.textContent="That subgame is coming — the shell is built for it.";
+  el.style.opacity=.8; clearTimeout(soon._t);
+  soon._t=setTimeout(()=>{el.style.opacity=0;},2600);
+}
+</script>
+</body>
+</html>

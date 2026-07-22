@@ -1,0 +1,55 @@
+{
+  "name": "Fuzz",
+  "background": "trader",
+  "nerve": 0,
+  "guile": 2,
+  "lore": 0,
+  "hands": 0,
+  "baht": 1493,
+  "heat": 0,
+  "stress": 0,
+  "health": 10,
+  "location": "lamphun",
+  "minutes": 360,
+  "day": 2,
+  "inventory": {
+    "jatukham": 1,
+    "ya_dong": 1
+  },
+  "worn": [],
+  "rep": {},
+  "skills": {
+    "charcha": 2,
+    "mahaniyom": 1,
+    "aksorn": 1
+  },
+  "xp": {},
+  "charms": [],
+  "glamour": 0,
+  "courier_ready": false,
+  "luck": 1,
+  "omen": "right_eye",
+  "hunch": "",
+  "dressed_today": false,
+  "tickets": [],
+  "projects": {},
+  "market": {},
+  "contacts": [],
+  "bonds": {},
+  "contact_seen": {},
+  "secrets_heard": [],
+  "wants_met": [],
+  "story": {
+    "act": 1,
+    "beats": [
+      "opening"
+    ],
+    "ending": "",
+    "epilogue": "",
+    "trials": {},
+    "anong_turned": false,
+    "unread": true
+  },
+  "festivals_seen": {},
+  "hearts_seen": []
+}

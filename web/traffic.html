@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ข้ามถนน — Chiang Mai Traffic</title>
+<style>
+  :root{ --ink:#f4ecff; --neon:#ff5db1; --gold:#ffd166; --teal:#3fd0c9; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; height:100%; background:#070818; color:var(--ink);
+    font-family:"Trebuchet MS",system-ui,sans-serif; overflow:hidden;
+    display:flex; align-items:center; justify-content:center; }
+  #wrap{ display:flex; flex-direction:column; align-items:center; gap:8px;
+    padding:8px; height:100%; max-height:100vh; }
+  h1{ font-size:20px; margin:2px 0 0; letter-spacing:1px;
+    text-shadow:0 0 10px var(--neon); }
+  h1 .en{ font-size:12px; opacity:.7; letter-spacing:2px; display:block; }
+  #hud{ display:flex; gap:14px; align-items:center; font-size:15px;
+    background:#12132b; padding:5px 12px; border-radius:12px;
+    box-shadow:0 0 0 1px #2a2c55 inset; }
+  #hud b{ color:var(--gold); }
+  #learned{ font-size:22px; letter-spacing:3px; min-height:26px; color:var(--teal);
+    text-shadow:0 0 8px var(--teal); }
+  #stage{ position:relative; }
+  canvas{ display:block; border-radius:16px; box-shadow:0 10px 40px #000a,
+    0 0 0 3px #2a2c55; image-rendering:auto; }
+  #overlay{ position:absolute; inset:0; display:none; align-items:center;
+    justify-content:center; text-align:center; padding:22px;
+    background:radial-gradient(120% 120% at 50% 30%, #1a1140ee, #05030fee);
+    border-radius:16px; cursor:pointer; }
+  #overlay .card{ max-width:340px; }
+  #bigchar{ font-size:120px; line-height:1; text-shadow:0 0 26px var(--neon);
+    margin:0; }
+  #cardtitle{ font-size:26px; margin:6px 0 2px; color:var(--gold); }
+  #cardsub{ font-size:16px; opacity:.85; margin:0 0 12px; }
+  #cardbody{ font-size:15px; line-height:1.5; opacity:.92; }
+  .tap{ margin-top:16px; font-size:13px; opacity:.7; letter-spacing:1px;
+    animation:pulse 1.2s infinite; }
+  @keyframes pulse{ 50%{ opacity:.25; } }
+  #pad{ display:grid; grid-template-columns:repeat(3,64px);
+    grid-template-rows:repeat(2,52px); gap:8px; margin-top:4px; }
+  #pad button{ font-size:26px; border:none; border-radius:14px; color:var(--ink);
+    background:#20224a; box-shadow:0 4px 0 #10112b; cursor:pointer;
+    transition:transform .05s; }
+  #pad button:active{ transform:translateY(3px); box-shadow:0 1px 0 #10112b; }
+  #pad .up{ grid-column:2; grid-row:1; }
+  #pad .left{ grid-column:1; grid-row:2; }
+  #pad .down{ grid-column:2; grid-row:2; }
+  #pad .right{ grid-column:3; grid-row:2; }
+  .hint{ font-size:12px; opacity:.55; margin:0; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1>ข้ามถนน<span class="en">CHIANG MAI TRAFFIC · cross the road</span></h1>
+  <div id="hud">
+    <span>Level <b id="lvl">1</b></span>
+    <span id="lives">❤❤❤</span>
+    <span>Score <b id="score">0</b></span>
+  </div>
+  <div id="learned"></div>
+  <div id="stage">
+    <canvas id="game"></canvas>
+    <div id="overlay"><div class="card" id="cardinner"></div></div>
+  </div>
+  <div id="pad">
+    <button class="up" data-dir="up">▲</button>
+    <button class="left" data-dir="left">◀</button>
+    <button class="down" data-dir="down">▼</button>
+    <button class="right" data-dir="right">▶</button>
+  </div>
+  <p class="hint">Arrow keys / WASD · swipe · or tap the buttons. Reach the four gate niches.</p>
+  <p class="hint"><a href="index.html" style="color:#b98cff">◂ back to the map</a></p>
+</div>
+<script>
+const cell=48, COLS=9, ROWS=12, W=cell*COLS, H=cell*ROWS;
+const cv=document.getElementById('game'); cv.width=W; cv.height=H;
+const ctx=cv.getContext('2d');
+// fit height to viewport
+function fit(){ const avail=window.innerHeight-230; const s=Math.min(1,(avail)/H);
+  cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px';
+  document.getElementById('overlay').style.width=(W*s)+'px';
+  document.getElementById('overlay').style.height=(H*s)+'px'; }
+window.addEventListener('resize',fit); fit();
+
+const NICHES=[1,3,5,7];
+const LANES={
+  0:{type:'gate'},
+  1:{type:'water',dir:1,speed:1.5,len:2,gap:3,kind:'lotus'},
+  2:{type:'water',dir:-1,speed:2.1,len:2,gap:4,kind:'krathong'},
+  3:{type:'water',dir:1,speed:1.1,len:3,gap:3,kind:'turtle'},
+  4:{type:'water',dir:-1,speed:2.5,len:2,gap:3,kind:'lotus'},
+  5:{type:'safe'},
+  6:{type:'road',dir:-1,speed:2.9,len:1,gap:3,kind:'scooter'},
+  7:{type:'road',dir:1,speed:1.9,len:2,gap:4,kind:'songthaew'},
+  8:{type:'road',dir:-1,speed:3.9,len:1,gap:4,kind:'scooter'},
+  9:{type:'road',dir:1,speed:1.3,len:2,gap:5,kind:'elephant'},
+  10:{type:'road',dir:-1,speed:2.5,len:1,gap:3,kind:'tuktuk'},
+  11:{type:'safe'},
+};
+
+// Thai consonants, taught acrophonically the way Thai children learn them.
+const DECK=[
+  {c:'ก',n:'ko kai',g:'chicken'},   {c:'ช',n:'cho chang',g:'elephant'},
+  {c:'ง',n:'ngo ngu',g:'snake'},    {c:'ต',n:'to tao',g:'turtle'},
+  {c:'ย',n:'yo yak',g:'ogre / giant'}, {c:'ร',n:'ro ruea',g:'boat'},
+  {c:'ล',n:'lo ling',g:'monkey'},   {c:'ส',n:'so suea',g:'tiger'},
+  {c:'ม',n:'mo ma',g:'horse'},      {c:'น',n:'no nu',g:'mouse'},
+  {c:'ห',n:'ho hip',g:'a chest'},   {c:'อ',n:'o ang',g:'a basin'},
+];
+const HISTORY=[
+  "In 1296 King Mangrai dug this very moat and raised the wall, founding Chiang Mai — the \u201cnew city\u201d of Lan Na, the land of a million rice fields.",
+  "Wat Chedi Luang\u2019s great chedi once cradled the Emerald Buddha, until a quake toppled its crown around 1545. Its lost height still looms over the quarter.",
+  "The Suan Prung gate is the gate of the dead \u2014 for centuries the departed left the city here for cremation. Its officers still cross it uneasily after dark.",
+  "In 1935 the monk Khruba Srivichai raised the road up Doi Suthep with tens of thousands of volunteer hands \u2014 no machines, only merit.",
+  "Lamphun, just south, was the Mon city of Hariphunchai \u2014 older even than Chiang Mai, and cradle of the revered Phra Rod amulet.",
+  "The old city\u2019s four corners are held by bastions called jaeng \u2014 Si Phum, Katam, Ku Ruang and Hua Lin \u2014 the cornerstones of the wall.",
+];
+
+let level,lives,score,levelSpeed,filled,fillMap,levelLetters,learned,player,t,flash,paused,cardClose;
+function reset(){ level=1; lives=3; score=0; levelSpeed=1; learned=[];
+  filled=new Set(); fillMap={}; levelLetters=pickLetters(1);
+  player={x:4*cell,y:11*cell}; t=0; flash=0; paused=false; updHUD(); }
+function pickLetters(lv){ const s=((lv-1)*4)%DECK.length; const o=[];
+  for(let i=0;i<4;i++)o.push(DECK[(s+i)%DECK.length]); return o; }
+function resetPlayer(){ player.x=4*cell; player.y=11*cell; }
+function updHUD(){ document.getElementById('lvl').textContent=level;
+  document.getElementById('score').textContent=score;
+  document.getElementById('lives').textContent='❤'.repeat(Math.max(0,lives))||'—';
+  document.getElementById('learned').textContent=learned.map(l=>l.c).join(' '); }
+
+function entsFor(row){ const L=LANES[row]; const unit=(L.len+L.gap)*cell;
+  let sc=(t*L.speed*levelSpeed*cell*L.dir)%unit; if(sc<0)sc+=unit;
+  const a=[]; for(let x=-unit+sc; x<W+unit; x+=unit) a.push({x,w:L.len*cell}); return a; }
+
+// ---- input ----
+function hop(dir){ if(paused) return;
+  const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[dir];
+  const nx=player.x+d[0]*cell, ny=player.y+d[1]*cell;
+  if(nx<-2||nx>W-cell+2||ny<0||ny>H-cell) return;
+  player.x=nx; player.y=ny; evaluate(); }
+function evaluate(){ const row=Math.round(player.y/cell), col=Math.round(player.x/cell);
+  if(row===0){ if(NICHES.includes(col)&&!filled.has(col)) award(col);
+    else loseLife(); } }
+function award(col){ const idx=filled.size; filled.add(col);
+  const L=levelLetters[idx]; fillMap[col]=L; learned.push(L); score+=100; updHUD();
+  const done=filled.size===NICHES.length; paused=true;
+  showCard(letterCard(L), ()=>{ resetPlayer();
+    if(done){ showCard(historyCard(), ()=>{ nextLevel(); }); } else paused=false; }); }
+function nextLevel(){ level++; levelSpeed*=1.12; filled=new Set(); fillMap={};
+  levelLetters=pickLetters(level); resetPlayer(); paused=false; updHUD(); }
+function loseLife(){ lives--; flash=0.35; updHUD();
+  if(lives<=0){ paused=true; showCard(gameOver(), ()=>{ reset(); }); }
+  else resetPlayer(); }
+
+// ---- overlay cards ----
+const ov=document.getElementById('overlay'), inner=document.getElementById('cardinner');
+function showCard(html,onClose){ inner.innerHTML=html; ov.style.display='flex';
+  cardClose=onClose; }
+function closeCard(){ if(!cardClose)return; const f=cardClose; cardClose=null;
+  ov.style.display='none'; f(); }
+ov.addEventListener('click',closeCard);
+function letterCard(L){ return `<div id="bigchar">${L.c}</div>
+  <div id="cardtitle">${L.n}</div><div id="cardsub">\u201c${L.g}\u201d</div>
+  <div id="cardbody">A letter learned at the gate. Fill all four niches to cross for good.</div>
+  <div class="tap">tap to keep going</div>`; }
+function historyCard(){ const h=HISTORY[(level-1)%HISTORY.length];
+  return `<div style="font-size:40px">\u{1F3EF}\u2728</div>
+  <div id="cardtitle">Level ${level} cleared</div>
+  <div id="cardbody">${h}</div><div class="tap">tap for the next crossing</div>`; }
+function gameOver(){ return `<div style="font-size:52px">\u{1F47B}</div>
+  <div id="cardtitle">The traffic got you</div>
+  <div id="cardbody">You learned ${learned.length} letter${learned.length===1?'':'s'} and scored ${score}.
+  The phii wave you off with a giggle.</div><div class="tap">tap to try again</div>`; }
+
+// ---- drawing ----
+const lanterns=Array.from({length:9},()=>({x:Math.random()*W,y:Math.random()*H,
+  s:6+Math.random()*8,v:8+Math.random()*14}));
+const phii=Array.from({length:3},()=>({x:Math.random()*W,y:cell+Math.random()*cell*4,
+  v:(Math.random()<.5?-1:1)*(6+Math.random()*10),ph:Math.random()*6}));
+function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function eyes(cx,cy,d){ ctx.fillStyle='#0b0b1a';
+  ctx.beginPath(); ctx.arc(cx-d,cy,2.4,0,7); ctx.arc(cx+d,cy,2.4,0,7); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(cx-d+.8,cy-.8,.8,0,7);
+  ctx.arc(cx+d+.8,cy-.8,.8,0,7); ctx.fill(); }
+
+function drawBG(){ ctx.fillStyle='#070818'; ctx.fillRect(0,0,W,H);
+  // moon
+  ctx.fillStyle='#fdf1c4'; ctx.globalAlpha=.9; ctx.beginPath();
+  ctx.arc(W-56,40,22,0,7); ctx.fill(); ctx.globalAlpha=1;
+  for(let r=0;r<ROWS;r++){ const L=LANES[r], y=r*cell;
+    if(L.type==='gate'){ ctx.fillStyle='#3a2b22'; ctx.fillRect(0,y,W,cell);
+      for(let c=0;c<COLS;c++){ if(NICHES.includes(c)){ ctx.fillStyle='#241a15';
+          rr(c*cell+4,y+5,cell-8,cell-8,7); ctx.fill();
+          if(fillMap[c]){ ctx.fillStyle='#ffd166'; ctx.font='30px serif';
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(fillMap[c].c,c*cell+cell/2,y+cell/2+2); } }
+      } ctx.strokeStyle='#5a4636'; ctx.lineWidth=2;
+      for(let c=0;c<=COLS;c++){ ctx.beginPath(); ctx.moveTo(c*cell,y);
+        ctx.lineTo(c*cell,y+cell); ctx.stroke(); }
+    } else if(L.type==='water'){ ctx.fillStyle=r%2?'#10344c':'#123a54';
+      ctx.fillRect(0,y,W,cell); ctx.strokeStyle='#1c5473'; ctx.lineWidth=1;
+      for(let x=0;x<W;x+=18){ ctx.beginPath(); ctx.arc((x+t*10)%W,y+cell*.7,5,3.4,6.1);
+        ctx.stroke(); } }
+    else if(L.type==='road'){ ctx.fillStyle='#201d29'; ctx.fillRect(0,y,W,cell);
+      ctx.strokeStyle='#5a5570'; ctx.setLineDash([10,10]); ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(0,y+cell/2); ctx.lineTo(W,y+cell/2); ctx.stroke();
+      ctx.setLineDash([]); }
+    else { ctx.fillStyle='#25543a'; ctx.fillRect(0,y,W,cell);
+      ctx.fillStyle='#2e6446'; for(let x=6;x<W;x+=22){ ctx.fillRect(x,y+8,3,7);
+        ctx.fillRect(x+8,y+cell-16,3,7); } }
+  }
+  // lanterns rising
+  for(const l of lanterns){ l.y-=l.v/60; if(l.y<-10){ l.y=H+10; l.x=Math.random()*W; }
+    ctx.fillStyle='rgba(255,150,60,.85)'; ctx.shadowColor='#ff8a3d'; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.ellipse(l.x,l.y,l.s*.7,l.s,0,0,7); ctx.fill(); ctx.shadowBlur=0; }
+  // drifting phii (cute, harmless ambience)
+  for(const p of phii){ p.x+=p.v/60; if(p.x<-20)p.x=W+20; if(p.x>W+20)p.x=-20;
+    p.ph+=.05; const yy=p.y+Math.sin(p.ph)*4;
+    ctx.globalAlpha=.5; ctx.fillStyle='#eaf6ff';
+    ctx.beginPath(); ctx.arc(p.x,yy,11,Math.PI,0);
+    ctx.lineTo(p.x+11,yy+12); for(let i=0;i<3;i++){ ctx.quadraticCurveTo(
+      p.x+11-i*7-3,yy+16,p.x+11-i*7-7,yy+12); } ctx.lineTo(p.x-11,yy); ctx.fill();
+    ctx.globalAlpha=1; eyes(p.x,yy,4); }
+}
+
+function drawEnt(kind,x,y,w){ const c=y+cell/2;
+  if(kind==='scooter'){ ctx.fillStyle='#ff5db1'; rr(x+8,y+18,w-16,10,5); ctx.fill();
+    ctx.fillStyle='#1c1830'; ctx.beginPath(); ctx.arc(x+12,y+34,6,0,7);
+    ctx.arc(x+w-12,y+34,6,0,7); ctx.fill();
+    ctx.fillStyle='#ffd166'; ctx.beginPath(); ctx.arc(x+w/2,y+14,7,0,7); ctx.fill();
+    eyes(x+w/2,y+13,3); }
+  else if(kind==='tuktuk'){ ctx.fillStyle='#3fd0c9'; rr(x+6,y+10,w-12,22,7); ctx.fill();
+    ctx.fillStyle='#0d2b2a'; rr(x+12,y+13,w-24,10,4); ctx.fill();
+    ctx.fillStyle='#1c1830'; ctx.beginPath(); ctx.arc(x+14,y+36,6,0,7);
+    ctx.arc(x+w-14,y+36,6,0,7); ctx.fill(); }
+  else if(kind==='songthaew'){ ctx.fillStyle='#e2402f'; rr(x+4,y+8,w-8,26,8); ctx.fill();
+    ctx.fillStyle='#b72a1c'; rr(x+w*0.5,y+6,w*0.42,16,6); ctx.fill();
+    ctx.fillStyle='#ffd9a8'; ctx.fillRect(x+10,y+14,14,10);
+    ctx.fillStyle='#1c1830'; ctx.beginPath(); ctx.arc(x+18,y+38,7,0,7);
+    ctx.arc(x+w-18,y+38,7,0,7); ctx.fill(); }
+  else if(kind==='elephant'){ ctx.fillStyle='#9aa0b5'; rr(x+8,y+10,w-16,28,14); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+16,y+18,8,10,0,0,7); ctx.fill(); // ear
+    ctx.fillStyle='#9aa0b5'; ctx.fillRect(x+6,y+22,6,16); // trunk
+    ctx.beginPath(); ctx.arc(x+9,y+38,3,0,7); ctx.fill();
+    eyes(x+22,y+18,4);
+    ctx.fillStyle='#ffd166'; ctx.fillRect(x+w-16,y+14,4,20); } // tusk-ish flag
+  else if(kind==='lotus'){ ctx.fillStyle='#2e7d5b'; ctx.beginPath();
+    ctx.ellipse(x+w/2,c,w/2-4,cell/2-8,0,0,7); ctx.fill();
+    ctx.fillStyle='#ff9ecb'; for(let i=0;i<6;i++){ const a=i/6*6.28;
+      ctx.beginPath(); ctx.ellipse(x+w/2+Math.cos(a)*10,c+Math.sin(a)*7,5,8,a,0,7);
+      ctx.fill(); } ctx.fillStyle='#ffd166'; ctx.beginPath();
+    ctx.arc(x+w/2,c,4,0,7); ctx.fill(); }
+  else if(kind==='krathong'){ ctx.fillStyle='#2f8f4f'; ctx.beginPath();
+    ctx.ellipse(x+w/2,c,w/2-4,cell/2-9,0,0,7); ctx.fill();
+    ctx.fillStyle='#f6e7c1'; ctx.beginPath(); ctx.ellipse(x+w/2,c,w/2-12,cell/2-15,0,0,7);
+    ctx.fill(); ctx.fillStyle='#ff8a3d'; ctx.shadowColor='#ffb703'; ctx.shadowBlur=14;
+    ctx.beginPath(); ctx.ellipse(x+w/2,c-3,3,6,0,0,7); ctx.fill(); ctx.shadowBlur=0; }
+  else if(kind==='turtle'){ ctx.fillStyle='#3fae6a'; ctx.beginPath();
+    ctx.ellipse(x+w/2,c,w/2-6,cell/2-10,0,0,7); ctx.fill();
+    ctx.fillStyle='#2b7d4c'; for(let i=-1;i<2;i++){ ctx.beginPath();
+      ctx.arc(x+w/2+i*12,c,5,0,7); ctx.fill(); }
+    ctx.fillStyle='#7fd6a0'; ctx.beginPath(); ctx.arc(x+w-8,c,6,0,7); ctx.fill();
+    eyes(x+w-8,c-1,2.5); }
+}
+function drawEntities(){ for(let r=1;r<ROWS-1;r++){ const L=LANES[r];
+  if(L.type!=='road'&&L.type!=='water')continue;
+  for(const e of entsFor(r)) drawEnt(L.kind,e.x,r*cell,e.w); } }
+
+function drawPlayer(){ const x=player.x, y=player.y;
+  ctx.save(); ctx.translate(x+cell/2,y+cell/2);
+  ctx.fillStyle='#000'; ctx.globalAlpha=.25; ctx.beginPath();
+  ctx.ellipse(0,15,13,5,0,0,7); ctx.fill(); ctx.globalAlpha=1;
+  // little smuggler dumpling with a shoulder bag
+  ctx.fillStyle='#ffd7a8'; ctx.beginPath(); ctx.arc(0,0,15,0,7); ctx.fill();
+  ctx.strokeStyle='#c98a52'; ctx.lineWidth=3; ctx.beginPath();
+  ctx.moveTo(-12,-6); ctx.lineTo(11,10); ctx.stroke(); // strap
+  ctx.fillStyle='#7b4bd8'; ctx.beginPath(); ctx.arc(13,11,7,0,7); ctx.fill(); // bag
+  ctx.fillStyle='#3a2a1a'; ctx.beginPath(); ctx.arc(0,-9,13,Math.PI,0); ctx.fill(); //hair
+  eyes(0,-1,5);
+  ctx.fillStyle='#e2668a'; ctx.beginPath(); ctx.arc(0,6,2.4,0,7); ctx.fill();
+  ctx.restore(); }
+
+// ---- update loop ----
+function update(dt){ t+=dt; if(paused)return;
+  const row=Math.round(player.y/cell), L=LANES[row];
+  if(L.type==='water'){ const cx=player.x+cell/2; let ride=null;
+    for(const e of entsFor(row)){ if(cx>=e.x+6&&cx<=e.x+e.w-6){ ride=e; break; } }
+    if(!ride){ loseLife(); return; }
+    player.x+=L.speed*levelSpeed*cell*L.dir*dt;
+    if(player.x<-8||player.x>W-cell+8){ loseLife(); return; } }
+  else if(L.type==='road'){ const px=player.x+7, pw=cell-14;
+    for(const e of entsFor(row)){ if(px<e.x+e.w-4&&e.x+4<px+pw){ loseLife(); return; } } }
+}
+let last=performance.now();
+function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
+  update(dt); drawBG(); drawEntities(); drawPlayer();
+  if(flash>0){ ctx.fillStyle=`rgba(255,40,90,${flash})`; ctx.fillRect(0,0,W,H);
+    flash-=dt; } requestAnimationFrame(frame); }
+
+// ---- wire inputs ----
+addEventListener('keydown',e=>{ const k=e.key.toLowerCase();
+  if(ov.style.display==='flex'&&(k===' '||k==='enter')){ closeCard(); e.preventDefault(); return; }
+  const m={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',
+    arrowright:'right',d:'right'}[k];
+  if(m){ hop(m); e.preventDefault(); } });
+document.querySelectorAll('#pad button').forEach(b=>{
+  b.addEventListener('click',()=>{ if(ov.style.display==='flex')closeCard(); else hop(b.dataset.dir); }); });
+let sx,sy;
+cv.addEventListener('touchstart',e=>{ const t0=e.touches[0]; sx=t0.clientX; sy=t0.clientY; },{passive:true});
+cv.addEventListener('touchend',e=>{ if(ov.style.display==='flex'){ return; }
+  const t0=e.changedTouches[0], dx=t0.clientX-sx, dy=t0.clientY-sy;
+  if(Math.abs(dx)<18&&Math.abs(dy)<18)return;
+  hop(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')); },{passive:true});
+
+// ---- go ----
+reset();
+showCard(`<div style="font-size:46px">\u{1F6F5}\u{1F418}\u{1F47B}</div>
+  <div id="cardtitle">Cross the moat</div>
+  <div id="cardbody">Dodge the scooters and songthaews, ride the lotus and krathong
+  across the water, and reach the four gate niches. Each crossing teaches you a Thai
+  letter; clear all four to learn a piece of old Chiang Mai.<br><br>
+  Arrows / WASD, swipe, or the buttons below. No typing.</div>
+  <div class="tap">tap to begin</div>`, ()=>{ paused=false; });
+paused=true;
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
