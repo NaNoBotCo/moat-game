@@ -82,6 +82,24 @@ class Character:
     story: dict = field(default_factory=dict)                # narrative arc: act, beats, ending
     festivals_seen: dict[str, int] = field(default_factory=dict)  # festival key -> last day joined
     hearts_seen: list[str] = field(default_factory=list)     # "contact:threshold" scenes witnessed
+    words: list[str] = field(default_factory=list)          # trade vocabulary you've picked up
+    noticing: dict = field(default_factory=dict)            # the unmarked opening: see noticing.py
+    perceived: int = 0                                      # what the city believes you're worth
+    works: dict[str, int] = field(default_factory=dict)     # baht sunk into great works
+    cursed: dict = field(default_factory=dict)              # Suan Prung's ledger: see curse.py
+    roads: dict = field(default_factory=dict)               # stretches you've sealed: see roads.py
+    moat: dict = field(default_factory=dict)                # whether the ring is dry. see roads.py
+    observations: list = field(default_factory=list)        # hours seen, for the atlas: contribute.py
+    # --- the pile and its rail -------------------------------------------
+    # `baht` above is the pocket — what shops and bribes actually take.
+    # `reserve` is the pile, wherever you've bound it. See rails.py.
+    difficulty: str = "medium"       # scales the defence burden on wealth only
+    rail: str = "cash"               # cash | crypto | foreign | thai_bank
+    reserve: int = 0                 # what sits on the rail
+    rail_grind: int = 0              # baht still owed to a cold rail
+    rail_frozen: bool = False        # today's hazard has the rail shut
+    rails_open: list[str] = field(default_factory=list)    # rails you may bind to
+    rails_burned: list[str] = field(default_factory=list)  # rails you busted out of
 
     # --- helpers ----------------------------------------------------------
     def mod(self, attr: str) -> int:
@@ -151,12 +169,22 @@ class Character:
             "contact_seen": self.contact_seen,
             "secrets_heard": self.secrets_heard, "wants_met": self.wants_met,
             "story": self.story, "festivals_seen": self.festivals_seen,
-            "hearts_seen": self.hearts_seen,
+            "hearts_seen": self.hearts_seen, "words": self.words,
+            "noticing": self.noticing, "perceived": self.perceived,
+            "works": self.works, "cursed": self.cursed,
+            "roads": self.roads, "moat": self.moat,
+            "observations": self.observations,
+            "difficulty": self.difficulty, "rail": self.rail,
+            "reserve": self.reserve, "rail_grind": self.rail_grind,
+            "rail_frozen": self.rail_frozen,
+            "rails_open": self.rails_open, "rails_burned": self.rails_burned,
         }
 
     @classmethod
     def from_dict(cls, d: dict) -> "Character":
-        return cls(**d)
+        # Saves made before a field existed simply take its default.
+        known = {f for f in cls.__dataclass_fields__}
+        return cls(**{k: v for k, v in d.items() if k in known})
 
     @classmethod
     def create(cls, name: str, background: str) -> "Character":

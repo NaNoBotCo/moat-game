@@ -137,7 +137,10 @@ def scan(pc: Character, approach: str, rng: random.Random | None = None,
         )
 
     attr, _ = APPROACHES[approach]
-    penalty = carried + _city_penalty(pc.heat)
+    # A curse reads at the arch like heat does — the spirit-heat needle is
+    # measuring something, whatever the officers have decided to call it.
+    from . import curse
+    penalty = carried + _city_penalty(pc.heat) + curse.scan_penalty(pc)
     glow = 0
     if pc.glamour > 0:
         glow = 2                 # the glow-up: scanners' eyes slide off you

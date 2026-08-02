@@ -97,8 +97,12 @@ DISTRICTS: dict[str, District] = {
         "worse than at any other gate and no one has bothered to fix them in "
         "years. The officers are as superstitious as they are bored — they keep "
         "the arch's spirit-heat alarm switched off, because it will not stop "
-        "screaming. It opens toward Wualai's silver lanes.",
-        features=("checkpoint",),
+        "screaming. It opens toward Wualai's silver lanes, and the Silver "
+        "Temple's roof shows over the wall from here \u2014 which is not a "
+        "coincidence, and never was. Under the arch, in the shade nobody wants "
+        "to stand in, there is trade: the best prices in Chiang Mai, and every "
+        "bargain struck here comes with something attached.",
+        features=("checkpoint", "market", "cursed_market"),
     ),
     # --- outer city -------------------------------------------------------
     "kad_chang_phuak": District(
@@ -129,7 +133,8 @@ DISTRICTS: dict[str, District] = {
         "and drifting sky-lanterns; buyers who came for silver leave with charms — "
         "and lately the lanterns keep sinking back down, though the night is "
         "still.",
-        features=("market", "buyers", "silver", "teacher:mudra"),
+        features=("market", "buyers", "silver", "teacher:mudra",
+                  "silver_temple"),
     ),
     "nimman": District(
         "nimman", "Nimman & Suan Dok Road (CMU)", "outside",

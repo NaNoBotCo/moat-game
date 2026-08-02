@@ -1,0 +1,29 @@
+# Cloudflare Worker config for Moat's LINE field layer.
+#
+#   cd worker
+#   npx wrangler kv namespace create MOAT_KV      # note the id, paste below
+#   npx wrangler deploy
+#   npx wrangler kv key put --binding=KV idx:v --path=field-index.json --remote
+#
+# The namespace is TITLED "MOAT_KV" in the dashboard, but the binding must stay
+# "KV" — worker.js reads env.KV. `wrangler kv namespace create` prints a snippet
+# using the title as the binding; pasting that verbatim compiles fine and then
+# 500s on every request against an undefined binding. Same gotcha as mot-dang's
+# and mueang-map's workers; noted here so nobody rediscovers it a third time.
+
+name = "moat-field"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "PASTE_NAMESPACE_ID_HERE"
+
+# Secrets — set with `npx wrangler secret put NAME`, never in this file:
+#   HASH_SALT            any long random string. Rotating it makes every
+#                        previously stored user hash permanently unlinkable,
+#                        which is a feature: rotate it whenever you like.
+#   LINE_TOKEN           Messaging API channel access token (to reply)
+#   LINE_CHANNEL_SECRET  to verify webhook signatures (see DEPLOY.md)
+#   LINE_CHANNEL_ID      LIFF channel id; /observe stays disabled until set
+#   EXPORT_KEY           guards GET /export

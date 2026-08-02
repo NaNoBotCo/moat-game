@@ -1,0 +1,130 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Moat — what's open?</title>
+<!--
+  The LIFF page: the same two-tap job as the chat flow, for people who would
+  rather see a list. Deliberately enormous tap targets and enormous type —
+  this gets used one-handed, outdoors, in sun, by someone walking.
+
+  It asks the browser for a position, sends it to /nearby, and throws it away.
+  The position is never stored here and never stored there.
+-->
+<style>
+  :root{--bg:#faf7f2;--fg:#17130f;--mut:#6b5f54;--line:#ddd2c2;--card:#fff;
+        --open:#1f6b3a;--shut:#8a2f1d;--acc:#7a4b2a}
+  @media (prefers-color-scheme:dark){:root{--bg:#14110f;--fg:#f4efe7;
+        --mut:#a89886;--line:#332c25;--card:#1e1a16;--open:#4bbd77;
+        --shut:#e08a72;--acc:#c98a5a}}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:19px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+       padding:1rem 1rem 3rem}
+  h1{font-size:1.5rem;margin:.2rem 0 .1rem}
+  p.sub{color:var(--mut);margin:0 0 1.2rem;font-size:1rem}
+  button{font:inherit;border-radius:.9rem;border:2px solid var(--line);
+         background:var(--card);color:var(--fg);width:100%;
+         min-height:4.2rem;font-size:1.15rem;font-weight:600}
+  button:active{transform:scale(.985)}
+  .big{background:var(--acc);color:#fff;border-color:transparent;
+       min-height:5rem;font-size:1.3rem;margin:.5rem 0 1.5rem}
+  .place{background:var(--card);border:1px solid var(--line);
+         border-radius:1rem;padding:1rem;margin:.8rem 0}
+  .name{font-weight:700;font-size:1.2rem}
+  .meta{color:var(--mut);font-size:.98rem;margin:.15rem 0 .8rem}
+  .flag{color:var(--acc);font-weight:700}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+  .o{color:var(--open);border-color:var(--open)}
+  .s{color:var(--shut);border-color:var(--shut)}
+  .done{opacity:.5}
+  footer{margin-top:2rem;color:var(--mut);font-size:.92rem;line-height:1.6}
+  a{color:var(--acc)}
+</style>
+
+<h1>What's open?</h1>
+<p class="sub">Tap only for what you can actually see. Six sightings settle a place.</p>
+
+<button class="big" id="go">Find what's around me</button>
+<div id="out"></div>
+
+<footer>
+  Kept: which place, the minute, open or shut.<br>
+  Not kept: your location, your name, anywhere you've been.<br>
+  Never collected against: temples, hospitals, clinics, schools, homes.<br>
+  <a href="/privacy">The whole list</a>
+</footer>
+
+<script>
+  const out = document.getElementById('out')
+  let idToken = null
+
+  // Inside LINE this comes from the LIFF SDK; outside it, the page still shows
+  // what is nearby but cannot record, which is the correct failure.
+  if (window.liff && window.__LIFF_ID__) {
+    liff.init({ liffId: window.__LIFF_ID__ })
+      .then(() => { idToken = liff.getIDToken() })
+      .catch(() => {})
+  }
+
+  document.getElementById('go').onclick = () => {
+    out.innerHTML = '<p class="sub">Asking your phone where it is…</p>'
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        // Used once, sent once, never stored — here or at the other end.
+        const { latitude: lat, longitude: lng } = pos.coords
+        const r = await fetch(`/nearby?lat=${lat.toFixed(5)}&lng=${lng.toFixed(5)}`)
+        const { places = [] } = await r.json()
+        render(places)
+      },
+      () => { out.innerHTML = '<p class="sub">No position — check location ' +
+                              'permission for LINE.</p>' },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  function render(places) {
+    if (!places.length) {
+      out.innerHTML = '<p class="sub">Nothing catalogued within 200 m worth a ' +
+                      'tap. Walk on a bit and try again.</p>'
+      return
+    }
+    out.innerHTML = ''
+    for (const p of places) {
+      const el = document.createElement('div')
+      el.className = 'place'
+      el.innerHTML =
+        `<div class="name">${p.c}</div>` +
+        `<div class="meta">${p.d} m away` +
+        (p.h ? '' : ' · <span class="flag">no hours known</span>') + '</div>' +
+        '<div class="row"><button class="o">Open</button>' +
+        '<button class="s">Shut</button></div>'
+      const [openBtn, shutBtn] = el.querySelectorAll('button')
+      openBtn.onclick = () => send(p.id, true, el)
+      shutBtn.onclick = () => send(p.id, false, el)
+      out.appendChild(el)
+    }
+  }
+
+  async function send(placeId, open, el) {
+    el.classList.add('done')
+    el.querySelectorAll('button').forEach(b => (b.disabled = true))
+    if (!idToken) {
+      el.querySelector('.meta').textContent =
+        'Open this inside LINE to record — nothing sent.'
+      return
+    }
+    const r = await fetch('/observe', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ idToken, placeId, open }),
+    })
+    const res = await r.json()
+    el.querySelector('.meta').textContent = res.ok
+      ? `Logged — ${res.n} sighting(s) here now.`
+      : { rate_limited: 'That is plenty for one hour.',
+          already_today: 'Already logged today.',
+          not_loggable: 'Not somewhere this collects.',
+          not_configured: 'Recording is not switched on yet.',
+        }[res.why || res.error] || 'Not recorded.'
+  }
+</script>

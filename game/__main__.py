@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 
-from . import save
+from . import rails, save
 from .character import BACKGROUNDS, Character
 from .engine import Game, _p
 
@@ -33,7 +33,56 @@ def new_character() -> Character:
         choice = input("background (1-3)> ").strip()
     bg_key = keys[int(choice) - 1]
     name = input("your name> ").strip() or "Nok"
-    return Character.create(name, bg_key)
+    pc = Character.create(name, bg_key)
+    _the_pile(pc)
+    return pc
+
+
+def _pick(prompt: str, n: int) -> int:
+    """Numbered choice, 1..n. Returns the index."""
+    choice = ""
+    while choice not in [str(i) for i in range(1, n + 1)]:
+        choice = input(f"{prompt} (1-{n})> ").strip()
+    return int(choice) - 1
+
+
+def _the_pile(pc: Character) -> None:
+    """The opening problem: a pile too big to police, and one choice about it."""
+    _p("")
+    _p(f"You are also sitting on {rails.PILE_BAHT:,}฿.")
+    _p("")
+    _p("Not in an account. In a room. Twenty-baht notes in rice sacks and "
+       "biscuit tins, coins in the buckets beneath them, the bottom layer "
+       f"already going soft with damp. It weighs "
+       f"{rails.weight_note(rails.PILE_BAHT)}. You cannot lift it, you cannot "
+       "count it, and you certainly cannot watch all of it at once.")
+    _p("")
+    _p("How hard is it going to be to keep?")
+    _p("")
+    dkeys = list(rails.DIFFICULTIES)
+    for i, k in enumerate(dkeys, 1):
+        d = rails.DIFFICULTIES[k]
+        print(f"  {i}. {d.name}")
+        print(f"     {d.blurb}")
+    pc.difficulty = dkeys[_pick("how hard", len(dkeys))]
+
+    _p("")
+    _p("And where are you going to put it?")
+    _p("")
+    rkeys = list(rails.OPENING_RAILS)
+    for i, k in enumerate(rkeys, 1):
+        rail = rails.RAILS[k]
+        print(f"  {i}. {rail.name}")
+        print(f"     {rail.blurb}")
+        print(f"     + {rail.strength}")
+        print(f"     - {rail.weakness}")
+    _p("")
+    _p("Choose wisely.")
+    _p("")
+    pc.rail = rkeys[_pick("rail", len(rkeys))]
+    pc.rails_open = [pc.rail]
+    # The pile goes onto the rail; your pocket keeps what the background gave you.
+    pc.reserve = rails.PILE_BAHT
 
 
 def main() -> None:
@@ -45,8 +94,10 @@ def main() -> None:
             return
     pc = new_character()
     _p("")
-    _p(f"Welcome, {pc.name}. You start in the old city with "
-       f"{pc.baht:,}฿ and a bag of goods. Type 'help' anytime.")
+    _p(f"Welcome, {pc.name}. You start in the old city with {pc.baht:,}฿ in "
+       f"your pocket, {pc.reserve:,}฿ on the "
+       f"{rails.RAILS[pc.rail].name.split(' —')[0].lower()} rail, and a bag of "
+       f"goods. Type 'help' anytime.")
     _p("")
     Game(pc, rng=random.Random()).run()
 

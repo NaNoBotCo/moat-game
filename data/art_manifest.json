@@ -1,0 +1,1892 @@
+{
+ "kind": "art_manifest",
+ "note": "Living document. Status is placeholder | commissioned | final. Code refers to assets by `file`, so a swap needs no code change.",
+ "formats": {
+  "key": {
+   "px": "2560×1440",
+   "note": "key art, full bleed, 16:9",
+   "fmt": "PNG, RGBA, 300dpi print master + web export"
+  },
+  "scene": {
+   "px": "1920×1080",
+   "note": "place card, full bleed, 16:9",
+   "fmt": "PNG, RGBA"
+  },
+  "portrait": {
+   "px": "1024×1280",
+   "note": "character, 4:5, waist-up",
+   "fmt": "PNG, RGBA, transparent background"
+  },
+  "item": {
+   "px": "512×512",
+   "note": "object on transparent ground, 1:1",
+   "fmt": "PNG, RGBA, transparent background"
+  },
+  "icon": {
+   "px": "256×256",
+   "note": "UI icon, 1:1, legible at 64px",
+   "fmt": "PNG, RGBA, transparent background"
+  },
+  "object": {
+   "px": "1536×1536",
+   "note": "hero object, 1:1",
+   "fmt": "PNG, RGBA, transparent background"
+  }
+ },
+ "palette_slots": [
+  "ink",
+  "teak",
+  "moat",
+  "brass",
+  "silver",
+  "marigold",
+  "lamp",
+  "dull"
+ ],
+ "universal_rails": [
+  "No real business names, signage, logos or shopfronts. Every venue in this game is a fictional composite unless a named permission is attached, and none is attached here.",
+  "No recognisable real people. Faces are invented.",
+  "Chiang Mai, 2076 — fifty years on. Worn-in near-future over Lanna fabric: solar shingles on old tin, sensor arches bolted to brick. Never gleaming, never a clean slate.",
+  "The animist layer is real in this world and is never winked at, ironised, or explained away. Draw it as fact, not as superstition.",
+  "Where Lanna visual convention is concerned you are the authority and this brief is not. If something here is wrong, say so and we change it."
+ ],
+ "count": 75,
+ "by_group": {
+  "key": 3,
+  "gates": 5,
+  "old_city": 5,
+  "districts": 7,
+  "cities": 4,
+  "people": 12,
+  "items": 17,
+  "rails": 4,
+  "wealth": 6,
+  "works": 6,
+  "festivals": 4,
+  "ui": 2
+ },
+ "assets": [
+  {
+   "key": "key_art",
+   "title": "Key art — the pile",
+   "format": "key",
+   "group": "key",
+   "status": "placeholder",
+   "function": "The first image anyone sees, and the whole premise in one frame: a person who owns more money than they can physically guard, and knows it.",
+   "in_frame": [
+    "A room — not a vault — with 208 tonnes of twenty-baht notes and coin in it: rice sacks, biscuit tins, buckets of coin, stacked to the ceiling and out of the doorway.",
+    "The bottom layer visibly going soft with damp. This detail is the story.",
+    "One person, small in the frame, looking at it. Not triumphant. Doing arithmetic.",
+    "Somewhere in the composition, a way in that does not lock."
+   ],
+   "avoid": [
+    "Glamour. Nothing about this is a heist poster.",
+    "Gold, gems, briefcases, banded stacks of foreign notes."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "lamp",
+    "dull"
+   ],
+   "file": "art/key/key_art.png"
+  },
+  {
+   "key": "coucal_clock",
+   "title": "The coucal clock",
+   "format": "object",
+   "group": "key",
+   "status": "placeholder",
+   "function": "The single authoritative time in the world, and the object the opening quest is a search for. Everything in the city keys off it; the player does not know it exists for hours.",
+   "in_frame": [
+    "A case of teak and glass the height of a man, in a side hall nobody has any reason to lock.",
+    "A brass coucal on a bracket — the bird that comes out at the turn of the watch and calls three times.",
+    "A movement behind the case that has not been wound in a lifetime and does not appear to need it.",
+    "Fifty years of dust everywhere except the bird's track.",
+    "A dial divided into EIGHT, not twelve. This is the tell and it must be readable."
+   ],
+   "avoid": [
+    "Any clock face a viewer could read as an ordinary 12-hour clock. The eight-fold division is the point.",
+    "Grandeur, altar treatment, gold. It is furniture that happens to be running the city."
+   ],
+   "refs": [
+    "game/coucal.py — eight watches, day begins 00:37"
+   ],
+   "palette": [
+    "teak",
+    "brass",
+    "ink",
+    "lamp"
+   ],
+   "file": "art/key/coucal_clock.png"
+  },
+  {
+   "key": "tha_phae",
+   "title": "Tha Phae Gate",
+   "format": "scene",
+   "group": "gates",
+   "status": "placeholder",
+   "function": "A moat gate: permanent, canonical, and a customs checkpoint. The player will see this frame hundreds of times over hundreds of hours and must know it instantly.",
+   "in_frame": [
+    "The eastern gate, mouth of the old city. By day a plaza where live pigeons mob the drone kind for dropped rice; by night a lit lane of aura-scanners funnels every crossing toward the river. The booth reads body-heat and something the officers only call 'the other heat' — and it has been twitching at empty air since the rains."
+   ],
+   "avoid": [
+    "Military hardware. This is customs, not a border war — bored people with a scanner."
+   ],
+   "refs": [],
+   "palette": [
+    "moat",
+    "teak",
+    "ink",
+    "lamp"
+   ],
+   "file": "art/gates/tha_phae.png"
+  },
+  {
+   "key": "chang_phuak",
+   "title": "Chang Phuak Gate",
+   "format": "scene",
+   "group": "gates",
+   "status": "placeholder",
+   "function": "A moat gate: permanent, canonical, and a customs checkpoint. The player will see this frame hundreds of times over hundreds of hours and must know it instantly.",
+   "in_frame": [
+    "The northern 'Elephant Gate', famed for its late-night khao kha moo. Customs here is sleepy — a bored officer, a humming scanner-arch, a coffee-drone on a wire — but the stall queue hides many eyes, and the night-shift CCTV keeps logging the same phi tai hong: a woman dead before her time, drifting the khao kha moo line, never reaching the counter."
+   ],
+   "avoid": [
+    "Military hardware. This is customs, not a border war — bored people with a scanner."
+   ],
+   "refs": [],
+   "palette": [
+    "moat",
+    "teak",
+    "ink",
+    "lamp"
+   ],
+   "file": "art/gates/chang_phuak.png"
+  },
+  {
+   "key": "suan_dok",
+   "title": "Suan Dok Gate",
+   "format": "scene",
+   "group": "gates",
+   "status": "placeholder",
+   "function": "A moat gate: permanent, canonical, and a customs checkpoint. The player will see this frame hundreds of times over hundreds of hours and must know it instantly.",
+   "in_frame": [
+    "The western gate opening toward the mountain and Wat Suan Dok's white royal stupas, their tips wrapped now in signal-repeaters that pray and broadcast at once. The switchbacked charge-road to Doi Suthep begins past the scanners; EV scooters top up under the bodhi trees while a monk blesses the charging bays each dawn."
+   ],
+   "avoid": [
+    "Military hardware. This is customs, not a border war — bored people with a scanner."
+   ],
+   "refs": [],
+   "palette": [
+    "moat",
+    "teak",
+    "ink",
+    "lamp"
+   ],
+   "file": "art/gates/suan_dok.png"
+  },
+  {
+   "key": "chiang_mai_gate",
+   "title": "Chiang Mai Gate",
+   "format": "scene",
+   "group": "gates",
+   "status": "placeholder",
+   "function": "A moat gate: permanent, canonical, and a customs checkpoint. The player will see this frame hundreds of times over hundreds of hours and must know it instantly.",
+   "in_frame": [
+    "The southern gate, flanked by the Pratu Chiang Mai market — flowers, curry, and charcoal smoke that still, somehow, blinds the scanners better than any jammer. Marigold garlands hang from the camera masts, and the officers buy amulets off their own confiscation table."
+   ],
+   "avoid": [
+    "Military hardware. This is customs, not a border war — bored people with a scanner."
+   ],
+   "refs": [],
+   "palette": [
+    "moat",
+    "teak",
+    "ink",
+    "lamp"
+   ],
+   "file": "art/gates/chiang_mai_gate.png"
+  },
+  {
+   "key": "suan_prung",
+   "title": "Suan Prung Gate",
+   "format": "scene",
+   "group": "gates",
+   "status": "placeholder",
+   "function": "A moat gate: permanent, canonical, and a customs checkpoint. The player will see this frame hundreds of times over hundreds of hours and must know it instantly.",
+   "in_frame": [
+    "The south-western gate. For centuries the dead left the city this way for cremation, so custom keeps it half-shunned; the scanners here glitch worse than at any other gate and no one has bothered to fix them in years. The officers are as superstitious as they are bored — they keep the arch's spirit-heat alarm switched off, because it will not stop screaming. It opens toward Wualai's silver lanes, and the Silver Temple's roof shows over the wall from here — which is not a coincidence, and never was. Under the arch, in the shade nobody wants to stand in, there is trade: the best prices in Chiang Mai, and every bargain struck here comes with something attached.",
+    "This is the gate the dead went out by for six hundred years, and it is half-shunned. Under the arch, in the shade nobody wants to stand in, there is a market — the best prices in the city, because nobody decent will trade here.",
+    "The spirit-heat alarm is switched off. Show the switch.",
+    "The Silver Temple's roof visible over the wall. The remedy is two hundred metres from the harm and always has been."
+   ],
+   "avoid": [
+    "Horror. It is shunned, not haunted-house. The officers are bored, not frightened."
+   ],
+   "refs": [],
+   "palette": [
+    "moat",
+    "teak",
+    "ink",
+    "lamp"
+   ],
+   "file": "art/gates/suan_prung.png"
+  },
+  {
+   "key": "quarter_si_phum",
+   "title": "the north-east quarter (Jaeng Si Phum)",
+   "format": "scene",
+   "group": "old_city",
+   "status": "placeholder",
+   "function": "One of five hand-authored places inside the wall. The old city NEVER changes — these five frames are the map the player keeps for the life of the game, and they are where the opening triangulation happens.",
+   "in_frame": [
+    "Teak houses and a lane of school gates. Quiet by nine.",
+    "A mile-square grid of teak and temple wall. Solar shingles on old tin roofs.",
+    "Something in frame that keeps a schedule — a shutter, a gate, a stall — because this quarter is evidence."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "marigold",
+    "ink"
+   ],
+   "file": "art/old_city/quarter_si_phum.png"
+  },
+  {
+   "key": "quarter_katam",
+   "title": "the south-east quarter (Jaeng Katam)",
+   "format": "scene",
+   "group": "old_city",
+   "status": "placeholder",
+   "function": "One of five hand-authored places inside the wall. The old city NEVER changes — these five frames are the map the player keeps for the life of the game, and they are where the opening triangulation happens.",
+   "in_frame": [
+    "Guesthouses and repair shops, the loudest corner inside the wall.",
+    "A mile-square grid of teak and temple wall. Solar shingles on old tin roofs.",
+    "Something in frame that keeps a schedule — a shutter, a gate, a stall — because this quarter is evidence."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "marigold",
+    "ink"
+   ],
+   "file": "art/old_city/quarter_katam.png"
+  },
+  {
+   "key": "quarter_ku_ruang",
+   "title": "the south-west quarter (Jaeng Ku Ruang)",
+   "format": "scene",
+   "group": "old_city",
+   "status": "placeholder",
+   "function": "One of five hand-authored places inside the wall. The old city NEVER changes — these five frames are the map the player keeps for the life of the game, and they are where the opening triangulation happens.",
+   "in_frame": [
+    "Low walls, mango shade, and the lane that smells of charcoal at exactly the same hour every day.",
+    "A mile-square grid of teak and temple wall. Solar shingles on old tin roofs.",
+    "Something in frame that keeps a schedule — a shutter, a gate, a stall — because this quarter is evidence."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "marigold",
+    "ink"
+   ],
+   "file": "art/old_city/quarter_ku_ruang.png"
+  },
+  {
+   "key": "quarter_hua_lin",
+   "title": "the north-west quarter (Jaeng Hua Lin)",
+   "format": "scene",
+   "group": "old_city",
+   "status": "placeholder",
+   "function": "One of five hand-authored places inside the wall. The old city NEVER changes — these five frames are the map the player keeps for the life of the game, and they are where the opening triangulation happens.",
+   "in_frame": [
+    "Half of it is monastery wall. Nothing here is in a hurry.",
+    "A mile-square grid of teak and temple wall. Solar shingles on old tin roofs.",
+    "Something in frame that keeps a schedule — a shutter, a gate, a stall — because this quarter is evidence."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "marigold",
+    "ink"
+   ],
+   "file": "art/old_city/quarter_hua_lin.png"
+  },
+  {
+   "key": "quarter_centre",
+   "title": "the middle of the old city",
+   "format": "scene",
+   "group": "old_city",
+   "status": "placeholder",
+   "function": "One of five hand-authored places inside the wall. The old city NEVER changes — these five frames are the map the player keeps for the life of the game, and they are where the opening triangulation happens.",
+   "in_frame": [
+    "Chedi Luang's broken mass, the pillar in its shade, and the crossing where every lane in the grid eventually admits it is going.",
+    "A mile-square grid of teak and temple wall. Solar shingles on old tin roofs.",
+    "Something in frame that keeps a schedule — a shutter, a gate, a stall — because this quarter is evidence."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "marigold",
+    "ink"
+   ],
+   "file": "art/old_city/quarter_centre.png"
+  },
+  {
+   "key": "kad_chang_phuak",
+   "title": "Kad Chang Phuak",
+   "format": "scene",
+   "group": "districts",
+   "status": "placeholder",
+   "function": "An outer-city district. Everything outside the moat is mutable — this frame must be able to change under the simulation later, so compose it so a building can be gone next year.",
+   "in_frame": [
+    "The night-market sprawl just north of the Elephant Gate: the famous khao kha moo stall in its cowboy hat, sai ua sizzling under buzzing LED, and a bus yard where autonomous songthaews and the whole north load and unload. Cheap food, cheaper eyes, and a face-recognition board that no one trusts and everyone feeds a false name. A 24-hour chemist's glows blue between the food stalls, cheap remedies stacked to the ceiling."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/districts/kad_chang_phuak.png"
+  },
+  {
+   "key": "warorot",
+   "title": "Warorot Market (Kad Luang)",
+   "format": "scene",
+   "group": "districts",
+   "status": "placeholder",
+   "function": "An outer-city district. Everything outside the moat is mutable — this frame must be able to change under the simulation later, so compose it so a building can be gone next year.",
+   "in_frame": [
+    "The great riverside bazaar. Gold shops behind hardened shutters, dried goods, QR-charms sold by the sheet, and the traders' guild who can move anything — physical or ledgered — for a cut. Upstairs, a back room of humming servers keeps two sets of books and one small shrine. A generations-old chemist's shop on the lane sells liniments over the counter and ya of a different sort beneath it."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/districts/warorot.png"
+  },
+  {
+   "key": "wualai",
+   "title": "Wualai Road (Saturday Walking Street)",
+   "format": "scene",
+   "group": "districts",
+   "status": "placeholder",
+   "function": "An outer-city district. Everything outside the moat is mutable — this frame must be able to change under the simulation later, so compose it so a building can be gone next year.",
+   "in_frame": [
+    "The silversmiths' road south of the wall, where hammers have beaten temple repoussé for generations and now tap the same rhythm into laser-etched pendants. On Saturday nights it becomes a river of stalls and drifting sky-lanterns; buyers who came for silver leave with charms — and lately the lanterns keep sinking back down, though the night is still."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/districts/wualai.png"
+  },
+  {
+   "key": "nimman",
+   "title": "Nimman & Suan Dok Road (CMU)",
+   "format": "scene",
+   "group": "districts",
+   "status": "placeholder",
+   "function": "An outer-city district. Everything outside the moat is mutable — this frame must be able to change under the simulation later, so compose it so a building can be gone next year.",
+   "in_frame": [
+    "West of the mountain gate: Wat Suan Dok's white royal stupas, CMU's crowds, and Nimmanhaemin's cafés where the young and polished trade in stories and follower-counts. The Khruba Srivichai road climbs from here toward Doi Suthep, its first switchback strung with prayer-flags and charging cables both. Glass-fronted beauty clinics promise glow by the hour, and the great teaching hospital at Suan Dok anchors the far end of the road — real medicine, at real-money prices."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/districts/nimman.png"
+  },
+  {
+   "key": "ping_river",
+   "title": "Ping Riverside (Mae Ping)",
+   "format": "scene",
+   "group": "districts",
+   "status": "placeholder",
+   "function": "An outer-city district. Everything outside the moat is mutable — this frame must be able to change under the simulation later, so compose it so a building can be gone next year.",
+   "in_frame": [
+    "Wooden jetties, long-tail boats, and a line of sensor-buoys the city swears watches the water. Where the gates fail, the river runners succeed — for a price and a risk. Since the rains the Ping runs low and gives things back: bricks, votive tablets, whole drowned lanes of Wiang Kum Kam surfacing in the shallows."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/districts/ping_river.png"
+  },
+  {
+   "key": "night_bazaar",
+   "title": "Night Bazaar (Chang Klan)",
+   "format": "scene",
+   "group": "districts",
+   "status": "placeholder",
+   "function": "An outer-city district. Everything outside the moat is mutable — this frame must be able to change under the simulation later, so compose it so a building can be gone next year.",
+   "in_frame": [
+    "Chang Klan Road after dark: a river of stalls, tourists, holo-signage, and buyers who pay premium for a charm with a story and a scannable certificate of blessing. The tuk-tuks are electric now; the pickpockets, augmented. Between the stalls, a bright wellness-and-beauty clinic sells tourists the glow they flew in for."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/districts/night_bazaar.png"
+  },
+  {
+   "key": "doi_suthep",
+   "title": "Doi Suthep",
+   "format": "scene",
+   "group": "districts",
+   "status": "placeholder",
+   "function": "An outer-city district. Everything outside the moat is mutable — this frame must be able to change under the simulation later, so compose it so a building can be gone next year.",
+   "in_frame": [
+    "The mountain temple at the head of Khruba Srivichai's road. Wat Phra That's golden chedi crowns the forest, ringed by pilgrims' phones held up like a second row of candles; the monasteries here consecrate amulets — chip and clay alike — and grow the herbs that fill the potions. Reached by the long climb up from Nimman, not across the moat. Above the cloud line the mesh finally comes clean, as if the mountain still listens where the city has stopped."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/districts/doi_suthep.png"
+  },
+  {
+   "key": "lamphun",
+   "title": "Lamphun (Hariphunchai)",
+   "format": "scene",
+   "group": "cities",
+   "status": "placeholder",
+   "function": "A city on the smuggling routes. Loads as a content module, so it needs to read as its own place, not as Chiang Mai again.",
+   "in_frame": [
+    "The old Mon city south of Chiang Mai, older even than Lan Na. Wat Phra That Hariphunchai's golden chedi presides; this is the birthplace of the revered Phra Rod, and scholars here still read the ancient hand — now cross-checking it against script-scanners that keep mis-transcribing one glyph as a name no dictionary holds."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/cities/lamphun.png"
+  },
+  {
+   "key": "lampang",
+   "title": "Lampang",
+   "format": "scene",
+   "group": "cities",
+   "status": "placeholder",
+   "function": "A city on the smuggling routes. Loads as a content module, so it needs to read as its own place, not as Chiang Mai again.",
+   "in_frame": [
+    "Horse-carriages still clop past teak shophouses, sharing the lane with silent EV vans. Wat Phra That Lampang Luang guards the plain; the kilns and the cooks here are famous, and the kiln-masters fire ceramic sensor-beads the smuggling trade quietly loves."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/cities/lampang.png"
+  },
+  {
+   "key": "chiang_rai",
+   "title": "Chiang Rai",
+   "format": "scene",
+   "group": "cities",
+   "status": "placeholder",
+   "function": "A city on the smuggling routes. Loads as a content module, so it needs to read as its own place, not as Chiang Mai again.",
+   "in_frame": [
+    "King Mangrai's first capital, up the punishing mountain road. A frontier town, gateway to the north and its quiet trades, where border drones and border spirits are given equal, wary respect."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/cities/chiang_rai.png"
+  },
+  {
+   "key": "golden_triangle",
+   "title": "Golden Triangle (Sop Ruak)",
+   "format": "scene",
+   "group": "cities",
+   "status": "placeholder",
+   "function": "A city on the smuggling routes. Loads as a content module, so it needs to read as its own place, not as Chiang Mai again.",
+   "in_frame": [
+    "Where the Ruak meets the Mekong and three borders blur. Chiang Saen's ruins watch a river that has moved contraband for centuries — by raft, by drone, by darker means. The satellites lose track of boats here, and always have."
+   ],
+   "avoid": [],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "lamp",
+    "marigold"
+   ],
+   "file": "art/cities/golden_triangle.png"
+  },
+  {
+   "key": "silver_temple",
+   "title": "The Silver Temple",
+   "format": "scene",
+   "group": "key",
+   "status": "placeholder",
+   "function": "Where a curse comes off. Structurally the counterweight to Suan Prung, and a visible ledger of every cursed bargain the city has ever needed undone.",
+   "in_frame": [
+    "A hall clad head to foot in worked silver panels, beaten on this road for generations.",
+    "About one panel in twenty gone the grey of a cold sky, taking no light at all while every other surface throws the lamps back.",
+    "Smiths up a ladder replacing a dull one.",
+    "The fire in the compound where the work is actually done — NOT inside the hall.",
+    "Behind the fire, a shed; in the shed, a rack; on the rack, fifty years of dull grey sheets nobody will melt down."
+   ],
+   "avoid": [
+    "This is the game's own temple and not a portrait of any real one. Do not reproduce an actual temple's identifying features.",
+    "Do not make the dull panels look damaged or dirty. They are full, not spoiled."
+   ],
+   "refs": [],
+   "palette": [
+    "silver",
+    "dull",
+    "lamp",
+    "ink"
+   ],
+   "file": "art/key/silver_temple.png"
+  },
+  {
+   "key": "contact_lawan",
+   "title": "Pa Lawan",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (guild, usually found at Warorot Market (Kad Luang)).",
+   "in_frame": [
+    "WHO: Teochew Chinese-Thai gold-shop matriarch",
+    "She runs the quiet side of a Kad Luang gold shop, where amulets change hands and money learns to forget where it came from. Nothing crosses the river trade without her knowing.",
+    "They are usually out during: any hour. Their voice: “Aiyah, you come again. Sit, sit. Tea first, business after — but business, we do, na.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_lawan.png"
+  },
+  {
+   "key": "contact_karim",
+   "title": "Haji Karim",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (street, usually found at Warorot Market (Kad Luang)).",
+   "in_frame": [
+    "WHO: Yunnanese Chin Haw Muslim caravan trader",
+    "Third-generation of the muleteers who brought tea and jade down from Yunnan. He keeps a tea stall by the Ban Haw mosque and a map of the old smuggling tracks in his head.",
+    "They are usually out during: any hour. Their voice: “Come, drink tea. Good one, from up the mountain. We talk slow slow, talk true.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_karim.png"
+  },
+  {
+   "key": "contact_seng",
+   "title": "Sai Seng",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (street, usually found at Wualai Road (Saturday Walking Street)).",
+   "in_frame": [
+    "WHO: Shan (Tai Yai) lantern-maker",
+    "He folds khom loi lanterns by the hundred for Yi Peng, and his are the ones that fly highest. He watches the night sky like other men watch the road.",
+    "They are usually out during: any hour. Their voice: “You. Long time. Everything okay okay lah.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_seng.png"
+  },
+  {
+   "key": "contact_naruemon",
+   "title": "Naruemon",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (street, usually found at Wualai Road (Saturday Walking Street)).",
+   "in_frame": [
+    "WHO: Hmong silversmith's daughter",
+    "She came down from the hills to sell her father's repoussé on the Saturday walking street. Sharp-eyed about who buys what, and why.",
+    "They are usually out during: any hour. Their voice: “Look look — handmade, real silver, not same-same factory one. For you, special price.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_naruemon.png"
+  },
+  {
+   "key": "contact_marisa",
+   "title": "Marisa",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (guild, usually found at Nimman & Suan Dok Road (CMU)).",
+   "in_frame": [
+    "WHO: mixed Thai-farang antiquities scholar at CMU",
+    "Raised between Chiang Mai and abroad, she catalogs votive clay for the university and can date a Hariphunchai tablet by its temper. Curious to a fault about where the new pieces are coming from.",
+    "They are usually out during: any hour. Their voice: “Oh! You're the one Pa Lawan send. Okay okay, come see — but careful na, this one very very old.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_marisa.png"
+  },
+  {
+   "key": "contact_anong",
+   "title": "Sgt. Anong",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (law, usually found at Tha Phae Gate).",
+   "in_frame": [
+    "WHO: khon mueang police sergeant",
+    "Twenty years on the Tha Phae beat, and the only officer who still writes up what she sees. That honesty is exactly why someone wants her looking the other way.",
+    "They are usually out during: afternoon, evening, night. Their voice: “You have business, say business. The other thing — cannot, na. Not me.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_anong.png"
+  },
+  {
+   "key": "contact_prasit",
+   "title": "Officer Prasit",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (law, usually found at Chiang Mai Gate).",
+   "in_frame": [
+    "WHO: superstitious southern-gate customs officer",
+    "He drew the Chiang Mai Gate post and hates it — too near the old ways, too near the dead's road. He'd trade a month's pay for something to keep the cold off his neck at night.",
+    "They are usually out during: morning, evening, night. Their voice: “Shh — not so loud, na. You bring something keep the cold off my neck? ... Later. Too many eye here.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_prasit.png"
+  },
+  {
+   "key": "contact_ajahn_ket",
+   "title": "Phra Ajahn Ket",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (monkhood, usually found at Doi Suthep).",
+   "in_frame": [
+    "WHO: abbot and keeper of a denied reliquary",
+    "Decades of dawns on the mountain have worn him patient and unbluffable. He teaches the old script to those with the merit to learn it, and keeps what should not be kept.",
+    "They are usually out during: morning, afternoon. Their voice: “เจริญพร นั่งลงก่อนเถิด สิ่งที่เจ้าถือมา วางลงเสียก่อน แล้วค่อยพูดกัน”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_ajahn_ket.png"
+  },
+  {
+   "key": "contact_aof",
+   "title": "Aof",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "A contact the player builds a bond with over hundreds of hours (street, usually found at Night Bazaar (Chang Klan)).",
+   "in_frame": [
+    "WHO: khon mueang tom, boss of the Chang Klan rider collective",
+    "She built a delivery crew out of forty win-motosai riders and one group chat, and now nothing moves across the night city faster than her word. Black crew vest, cropped hair, a toothpick and a grin — she runs the roads the way Pa Lawan runs the river.",
+    "They are usually out during: afternoon, evening, night. Their voice: “Eh, you again! Sit sit — no, cannot sit, I working. Talk while I load, na. You need something go somewhere fast? My rider go anywhere.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No character-sheet neutrality. They are mid-something."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_aof.png"
+  },
+  {
+   "key": "contact_noi",
+   "title": "Noi-who-waits",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "One of the dead, or something older. The player can only speak to them with Spirit-speech, and they are drawn as plainly real as anyone living — the animist layer is fact in this world.",
+   "in_frame": [
+    "WHO: a phi tai hong lingering at the gate of the dead",
+    "A young runner who died at Suan Prung the night the pillar went quiet, and whose lamp no one lit. She is not angry. She is worse than angry: she is patient, and she remembers.",
+    "They are usually out during: evening, night. Their voice: “You see me? ... Nobody see me long time already. Ask, then. I wait. I always wait.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No spectral clichés for the unseen — no transparency, no glow, no chains."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_noi.png"
+  },
+  {
+   "key": "contact_mae_kaew",
+   "title": "Mae Kaew",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "One of the dead, or something older. The player can only speak to them with Spirit-speech, and they are drawn as plainly real as anyone living — the animist layer is fact in this world.",
+   "in_frame": [
+    "WHO: a grandmother of your line, watching from the shrine",
+    "She keeps the household spirits and the family's long memory, and she will judge you before she helps you — as is her right.",
+    "They are usually out during: any hour. Their voice: “Gin khao reu yang, laan? Gin hai im kon na. Reuang muang, koi wa gan.”",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No spectral clichés for the unseen — no transparency, no glow, no chains."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_mae_kaew.png"
+  },
+  {
+   "key": "contact_inthakhin",
+   "title": "the Guardian of the Pillar",
+   "format": "portrait",
+   "group": "people",
+   "status": "placeholder",
+   "function": "One of the dead, or something older. The player can only speak to them with Spirit-speech, and they are drawn as plainly real as anyone living — the animist layer is fact in this world.",
+   "in_frame": [
+    "WHO: the deva sworn to the Sao Inthakhin",
+    "The shining one who has stood beneath the city pillar since Kawila set it at Wat Chedi Luang. It has not spoken since the rains — until, at last, you are one it will speak to.",
+    "They are usually out during: any hour.",
+    "Waist-up, working clothes, doing or holding the thing they actually do.",
+    "A face that reads at 200px. The player will see it beside dialogue for a very long time."
+   ],
+   "avoid": [
+    "Invented face, invented person. No likeness of anyone real.",
+    "No spectral clichés for the unseen — no transparency, no glow, no chains."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "teak",
+    "marigold",
+    "lamp"
+   ],
+   "file": "art/people/contact_inthakhin.png"
+  },
+  {
+   "key": "item_phra_rod",
+   "title": "Phra Rod of Lamphun",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "Clay votive from Wat Mahawan, Lamphun. Among the oldest revered amulets in the north; a genuine one is a controlled antiquity.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_phra_rod.png"
+  },
+  {
+   "key": "item_phra_somdej",
+   "title": "Phra Somdej",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "The 'king of amulets', tied to Somdej To of Bangkok. Endless fakes; provenance is everything.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_phra_somdej.png"
+  },
+  {
+   "key": "item_luang_phu_thuat",
+   "title": "Luang Phu Thuat",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "The monk who 'walked on water'. His bearer, the belief runs, cannot die a violent or untimely death — which is why runners of the night roads pay triple, and a scanner reads only the metal.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_luang_phu_thuat.png"
+  },
+  {
+   "key": "item_khun_paen",
+   "title": "Phra Khun Paen",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "Charm of charisma and attraction, from the Ayutthaya folk epic. Sells fast in the night market.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_khun_paen.png"
+  },
+  {
+   "key": "item_jatukham",
+   "title": "Jatukham Rammathep",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "The Nakhon Si Thammarat medallion whose 2006-07 craze minted and then broke fortunes. Volatile — buy the hype, dump before it dies.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_jatukham.png"
+  },
+  {
+   "key": "item_khruba_srivichai",
+   "title": "Khruba Srivichai medallion",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "The saint of Lanna (1878-1939) who raised the road up Doi Suthep in 1935 with volunteer hands. His likeness is the north's own protector — merit cast in metal.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_khruba_srivichai.png"
+  },
+  {
+   "key": "item_phra_khong",
+   "title": "Phra Khong of Lamphun",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "One of Hariphunchai's classic votive set beside the Phra Rod. Kiln-fired clay, a thousand years old, and just as controlled.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_phra_khong.png"
+  },
+  {
+   "key": "item_phra_bang",
+   "title": "Phra Bang of Lamphun",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "Another of the old Lamphun set — smaller, seated, serene. Collectors chase the whole family; a matched pair fetches a premium.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_phra_bang.png"
+  },
+  {
+   "key": "item_phra_kring",
+   "title": "Phra Kring",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "A cast bronze Buddha of Bhaisajyaguru with a tiny ball sealed inside; shake it and it rings. Prized for healing — and for the sound that proves it whole.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_phra_kring.png"
+  },
+  {
+   "key": "item_salika",
+   "title": "Salika Lin Thong",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "The golden-tongued myna charm: metta and a silver tongue. Traders and touts swear by it. Carry one and doors open a little wider.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_salika.png"
+  },
+  {
+   "key": "item_takrut",
+   "title": "Takrut Scroll",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A amulet the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "A rolled metal yantra scroll, the yant drawn in old khom letters by a ruesi's hand. Easy to hide in a belt or hem — and a scanner reads the foil, never the wicha rolled inside.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_takrut.png"
+  },
+  {
+   "key": "item_ya_dong",
+   "title": "Ya Dong (herbal liquor)",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A potion the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "Roadside roots-and-spirits tonic. Bulky bottles, mild scrutiny.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_ya_dong.png"
+  },
+  {
+   "key": "item_ya_hom",
+   "title": "Ya Hom (herbal inhalant)",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A potion the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "Fragrant powder for faintness and nausea. Utterly ordinary — good camouflage packed beside hotter goods.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_ya_hom.png"
+  },
+  {
+   "key": "item_samun_phrai",
+   "title": "Samun Phrai bundle",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A potion the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "Fresh medicinal-herb bundle from the Doi Suthep slopes, gathered where the old ogre-guardians Pu Sae and Ya Sae are still fed each year. Half medicine, half a ruesi's herbcraft.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_samun_phrai.png"
+  },
+  {
+   "key": "item_miang",
+   "title": "Miang (fermented tea)",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A potion the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "Pickled tea leaves from the hills — chewed, offered, and once the very currency of the northern trails. Utterly legal, endlessly useful cover for what travels beside it.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_miang.png"
+  },
+  {
+   "key": "item_ya_dong_black",
+   "title": "Black-Label Ya Dong",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A potion the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "A 2076 gilded brew — potent, unlicensed, and exactly what the gate scanners are calibrated for.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_ya_dong_black.png"
+  },
+  {
+   "key": "item_doi_brew",
+   "title": "Suthep Clarity Brew",
+   "format": "item",
+   "group": "items",
+   "status": "placeholder",
+   "function": "A potion the player buys, carries, authenticates and smuggles. Must read at 64px in a bag list AND stand up to close appraisal, because forensic authentication is a core skill — wear, material and make have to be there.",
+   "in_frame": [
+    "Monastery nootropic infusion, distilled by a ruesi's recipe and quietly traded since the '60s. Drinkers swear the clarity is the hermit-sage lending them his eyes. Legal to drink, illegal in quantity.",
+    "Actual size cues. These are small objects.",
+    "Honest wear. A genuine one has a history and it shows."
+   ],
+   "avoid": [
+    "Do not invent a lineage or an inscription. If you need the real form of something, ask — we have a sourced reference corpus and will get it right rather than guess.",
+    "No glow, no aura, no particle effects. Power here is not signalled by lighting."
+   ],
+   "refs": [
+    "wichaa.net — sourced amulet reference and glossary"
+   ],
+   "palette": [
+    "brass",
+    "teak",
+    "ink",
+    "silver"
+   ],
+   "file": "art/items/item_doi_brew.png"
+  },
+  {
+   "key": "rail_cash",
+   "title": "Cash — the pile stays a pile",
+   "format": "icon",
+   "group": "rails",
+   "status": "placeholder",
+   "function": "One of four ways to hold a billion baht, chosen once at the start. The icon has to carry the whole trade-off at a glance, because the choice is made before the player understands the game.",
+   "in_frame": [
+    "It sits where you put it, in sacks and biscuit tins and under the floor of somewhere you hope nobody thinks about.",
+    "STRENGTH: Nothing to freeze, nothing to trace, and every door in the informal economy opens to it.",
+    "WEAKNESS: It weighs what it weighs. Damp, rats, fire, hands, and a line of people who feel owed."
+   ],
+   "avoid": [
+    "No currency symbols as the whole idea. Show the *form* the money takes and what holding it costs you."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "brass",
+    "silver",
+    "dull"
+   ],
+   "file": "art/rails/rail_cash.png"
+  },
+  {
+   "key": "rail_crypto",
+   "title": "Crypto — the pile becomes a key",
+   "format": "icon",
+   "group": "rails",
+   "status": "placeholder",
+   "function": "One of four ways to hold a billion baht, chosen once at the start. The icon has to carry the whole trade-off at a glance, because the choice is made before the player understands the game.",
+   "in_frame": [
+    "A seed phrase, and whatever power and signal Chiang Mai can give you on the day you need it.",
+    "STRENGTH: Weightless, and it crosses any distance you like.",
+    "WEAKNESS: Keys, power and network are now survival. The chain remembers, and the exchange knows precisely what you hold."
+   ],
+   "avoid": [
+    "No currency symbols as the whole idea. Show the *form* the money takes and what holding it costs you."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "brass",
+    "silver",
+    "dull"
+   ],
+   "file": "art/rails/rail_crypto.png"
+  },
+  {
+   "key": "rail_foreign",
+   "title": "A foreign bank — the pile becomes respectable",
+   "format": "icon",
+   "group": "rails",
+   "status": "placeholder",
+   "function": "One of four ways to hold a billion baht, chosen once at the start. The icon has to carry the whole trade-off at a glance, because the choice is made before the player understands the game.",
+   "in_frame": [
+    "Someone else's jurisdiction, someone else's compliance desk, and a monthly statement in a language you may not read.",
+    "STRENGTH: Respectable, insurable, and it survives fire and flood.",
+    "WEAKNESS: It assumes papers you may not have. Limits, correspondent chokepoints, and a stranger holding the off switch."
+   ],
+   "avoid": [
+    "No currency symbols as the whole idea. Show the *form* the money takes and what holding it costs you."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "brass",
+    "silver",
+    "dull"
+   ],
+   "file": "art/rails/rail_foreign.png"
+  },
+  {
+   "key": "rail_thai_bank",
+   "title": "A Thai bank account — the pile becomes ordinary",
+   "format": "icon",
+   "group": "rails",
+   "status": "placeholder",
+   "function": "One of four ways to hold a billion baht, chosen once at the start. The icon has to carry the whole trade-off at a glance, because the choice is made before the player understands the game.",
+   "in_frame": [
+    "A passbook, a branch that knows your face, and a manager who remembers what you did to get the account.",
+    "STRENGTH: Local, fast, unremarkable, and it spends everywhere the cash does without the weight.",
+    "WEAKNESS: You are inside the system now, and the system files reports."
+   ],
+   "avoid": [
+    "No currency symbols as the whole idea. Show the *form* the money takes and what holding it costs you."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "brass",
+    "silver",
+    "dull"
+   ],
+   "file": "art/rails/rail_thai_bank.png"
+  },
+  {
+   "key": "band_invisible",
+   "title": "Read as: nobody in particular",
+   "format": "icon",
+   "group": "wealth",
+   "status": "placeholder",
+   "function": "How strangers treat the player at this level of *perceived* wealth. Six of these form a ladder the player climbs whether they want to or not.",
+   "in_frame": [
+    "Nobody looks twice. You get the first price and the short answer.",
+    "The same person, read differently. Show it in how others hold themselves, not in what the player wears."
+   ],
+   "avoid": [
+    "No money in frame. This is about being *seen*, not having."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "marigold",
+    "lamp",
+    "dull"
+   ],
+   "file": "art/wealth/band_invisible.png"
+  },
+  {
+   "key": "band_getting_by",
+   "title": "Read as: someone doing all right",
+   "format": "icon",
+   "group": "wealth",
+   "status": "placeholder",
+   "function": "How strangers treat the player at this level of *perceived* wealth. Six of these form a ladder the player climbs whether they want to or not.",
+   "in_frame": [
+    "You are read as working, and solvent, which is the safest thing to be.",
+    "The same person, read differently. Show it in how others hold themselves, not in what the player wears."
+   ],
+   "avoid": [
+    "No money in frame. This is about being *seen*, not having."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "marigold",
+    "lamp",
+    "dull"
+   ],
+   "file": "art/wealth/band_getting_by.png"
+  },
+  {
+   "key": "band_comfortable",
+   "title": "Read as: someone with a bit put by",
+   "format": "icon",
+   "group": "wealth",
+   "status": "placeholder",
+   "function": "How strangers treat the player at this level of *perceived* wealth. Six of these form a ladder the player climbs whether they want to or not.",
+   "in_frame": [
+    "People start asking after your family, and mean it two ways.",
+    "The same person, read differently. Show it in how others hold themselves, not in what the player wears."
+   ],
+   "avoid": [
+    "No money in frame. This is about being *seen*, not having."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "marigold",
+    "lamp",
+    "dull"
+   ],
+   "file": "art/wealth/band_comfortable.png"
+  },
+  {
+   "key": "band_known",
+   "title": "Read as: someone who is doing well",
+   "format": "icon",
+   "group": "wealth",
+   "status": "placeholder",
+   "function": "How strangers treat the player at this level of *perceived* wealth. Six of these form a ladder the player climbs whether they want to or not.",
+   "in_frame": [
+    "Your name is said in rooms you are not in. Fences return your calls.",
+    "The same person, read differently. Show it in how others hold themselves, not in what the player wears."
+   ],
+   "avoid": [
+    "No money in frame. This is about being *seen*, not having."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "marigold",
+    "lamp",
+    "dull"
+   ],
+   "file": "art/wealth/band_known.png"
+  },
+  {
+   "key": "band_rich",
+   "title": "Read as: a rich person",
+   "format": "icon",
+   "group": "wealth",
+   "status": "placeholder",
+   "function": "How strangers treat the player at this level of *perceived* wealth. Six of these form a ladder the player climbs whether they want to or not.",
+   "in_frame": [
+    "You are treated well and watched closely, and never told the real price of anything.",
+    "The same person, read differently. Show it in how others hold themselves, not in what the player wears."
+   ],
+   "avoid": [
+    "No money in frame. This is about being *seen*, not having."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "marigold",
+    "lamp",
+    "dull"
+   ],
+   "file": "art/wealth/band_rich.png"
+  },
+  {
+   "key": "band_the_pile",
+   "title": "Read as: the one with the money",
+   "format": "icon",
+   "group": "wealth",
+   "status": "placeholder",
+   "function": "How strangers treat the player at this level of *perceived* wealth. Six of these form a ladder the player climbs whether they want to or not.",
+   "in_frame": [
+    "Everyone knows. Every kindness now has a second meaning, and you will never be certain of a friend again.",
+    "The same person, read differently. Show it in how others hold themselves, not in what the player wears."
+   ],
+   "avoid": [
+    "No money in frame. This is about being *seen*, not having."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "marigold",
+    "lamp",
+    "dull"
+   ],
+   "file": "art/wealth/band_the_pile.png"
+  },
+  {
+   "key": "work_train_north",
+   "title": "The northern line to Chiang Rai",
+   "format": "scene",
+   "group": "works",
+   "status": "placeholder",
+   "function": "A great work, funded in instalments over months. Consequence: A train runs the Chiang Rai corridor — fast, cheap, and the safest road north you will ever have.",
+   "in_frame": [
+    "One hundred and ninety kilometres of mountain that has defeated every government that ever costed it. Tunnels, viaducts, and a route survey that three ministries have lost.",
+    "Work in progress, not a ribbon-cutting. These take years and are visible the whole time."
+   ],
+   "avoid": [
+    "No philanthropy imagery. Nobody is being thanked."
+   ],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "ink",
+    "brass"
+   ],
+   "file": "art/works/work_train_north.png"
+  },
+  {
+   "key": "work_drainage",
+   "title": "Drainage under the eastern flats",
+   "format": "scene",
+   "group": "works",
+   "status": "placeholder",
+   "function": "A great work, funded in instalments over months. Consequence: The damp stops eating your stash, and a district that flooded every year stops flooding.",
+   "in_frame": [
+    "Culverts, pumps, and a retention pond where the market used to flood to the knee. The water has opinions about being moved, and so do the people who live in it — both must be settled with.",
+    "Work in progress, not a ribbon-cutting. These take years and are visible the whole time."
+   ],
+   "avoid": [
+    "No philanthropy imagery. Nobody is being thanked."
+   ],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "ink",
+    "brass"
+   ],
+   "file": "art/works/work_drainage.png"
+  },
+  {
+   "key": "work_papers",
+   "title": "A standing fund for papers",
+   "format": "scene",
+   "group": "works",
+   "status": "placeholder",
+   "function": "A great work, funded in instalments over months. Consequence: People locked out of the formal economy get in — and the ones you helped remember it. Claims on your pile drop sharply.",
+   "in_frame": [
+    "Lawyers, filing fees, translators, and the patience to sit in the queue for people who cannot afford to lose the day's work. Status is the gate everything else in this city hangs on.",
+    "Work in progress, not a ribbon-cutting. These take years and are visible the whole time."
+   ],
+   "avoid": [
+    "No philanthropy imagery. Nobody is being thanked."
+   ],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "ink",
+    "brass"
+   ],
+   "file": "art/works/work_papers.png"
+  },
+  {
+   "key": "work_market_hall",
+   "title": "A market hall for the vendor families",
+   "format": "scene",
+   "group": "works",
+   "status": "placeholder",
+   "function": "A great work, funded in instalments over months. Consequence: The vendor families hold their ground, and they price you as one of their own rather than as a mark.",
+   "in_frame": [
+    "Roof, water, power, cold storage, and — the part that costs — tenure. Stalls that cannot be cleared by anybody with a clipboard and a friend at the district office.",
+    "Work in progress, not a ribbon-cutting. These take years and are visible the whole time."
+   ],
+   "avoid": [
+    "No philanthropy imagery. Nobody is being thanked."
+   ],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "ink",
+    "brass"
+   ],
+   "file": "art/works/work_market_hall.png"
+  },
+  {
+   "key": "work_wat_hall",
+   "title": "Restoration of the clock's hall",
+   "format": "scene",
+   "group": "works",
+   "status": "placeholder",
+   "function": "A great work, funded in instalments over months. Consequence: The clock is safe for another century, and the sangha knows exactly who paid for it.",
+   "in_frame": [
+    "Teak, tile, gold leaf, and a maintenance endowment for the one movement in this city that everything else keeps time by. Nobody has funded its upkeep in fifty years. Nobody had to.",
+    "Work in progress, not a ribbon-cutting. These take years and are visible the whole time."
+   ],
+   "avoid": [
+    "No philanthropy imagery. Nobody is being thanked."
+   ],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "ink",
+    "brass"
+   ],
+   "file": "art/works/work_wat_hall.png"
+  },
+  {
+   "key": "work_land_bank",
+   "title": "Land assembly ahead of the flood maps",
+   "format": "scene",
+   "group": "works",
+   "status": "placeholder",
+   "function": "A great work, funded in instalments over months. Consequence: You own the ground the outer city is about to be rebuilt on.",
+   "in_frame": [
+    "Buy the low ground cheap, before the drainage study is public and after you have read it. Entirely legal. Not entirely nice.",
+    "Work in progress, not a ribbon-cutting. These take years and are visible the whole time."
+   ],
+   "avoid": [
+    "No philanthropy imagery. Nobody is being thanked."
+   ],
+   "refs": [],
+   "palette": [
+    "teak",
+    "moat",
+    "ink",
+    "brass"
+   ],
+   "file": "art/works/work_land_bank.png"
+  },
+  {
+   "key": "festival_sunday_walk",
+   "title": "Ratchadamnoen Sunday Walking Street",
+   "format": "scene",
+   "group": "festivals",
+   "status": "placeholder",
+   "function": "A recurring gathering the player plans around. Presence is the cost — a festival eats most of a day and deepens every bond in the crowd at once.",
+   "in_frame": [
+    "Lantern-light, khao soi steam, a saw-sam-sai played for coins; the whole old city is out walking, and everyone's easier to reach.",
+    "Set at Old City (Nai Wiang).",
+    "A crowd the player is inside, not watching."
+   ],
+   "avoid": [
+    "No tourist framing. Never sort this into authentic vs. for-visitors — it is simply what people do."
+   ],
+   "refs": [],
+   "palette": [
+    "marigold",
+    "lamp",
+    "teak",
+    "ink"
+   ],
+   "file": "art/festivals/festival_sunday_walk.png"
+  },
+  {
+   "key": "festival_saturday_walk",
+   "title": "Wualai Saturday Walking Street",
+   "format": "scene",
+   "group": "festivals",
+   "status": "placeholder",
+   "function": "A recurring gathering the player plans around. Presence is the cost — a festival eats most of a day and deepens every bond in the crowd at once.",
+   "in_frame": [
+    "Beaten-silver stalls glinting, sai ua on the grill, the Saturday crowd thick from the gate to the temple.",
+    "Set at Wualai Road (Saturday Walking Street).",
+    "A crowd the player is inside, not watching."
+   ],
+   "avoid": [
+    "No tourist framing. Never sort this into authentic vs. for-visitors — it is simply what people do."
+   ],
+   "refs": [],
+   "palette": [
+    "marigold",
+    "lamp",
+    "teak",
+    "ink"
+   ],
+   "file": "art/festivals/festival_saturday_walk.png"
+  },
+  {
+   "key": "festival_wan_phra",
+   "title": "Wan Phra (the Buddhist sabbath)",
+   "format": "scene",
+   "group": "festivals",
+   "status": "placeholder",
+   "function": "A recurring gathering the player plans around. Presence is the cost — a festival eats most of a day and deepens every bond in the crowd at once.",
+   "in_frame": [
+    "Incense and white cloth, an old woman's whispered chant, the monks moving slow; a day when the sangha will actually see you.",
+    "Set wherever this is properly kept.",
+    "A crowd the player is inside, not watching."
+   ],
+   "avoid": [
+    "No tourist framing. Never sort this into authentic vs. for-visitors — it is simply what people do."
+   ],
+   "refs": [],
+   "palette": [
+    "marigold",
+    "lamp",
+    "teak",
+    "ink"
+   ],
+   "file": "art/festivals/festival_wan_phra.png"
+  },
+  {
+   "key": "festival_inthakhin",
+   "title": "Inthakhin Bucha (Sai Khan Dok)",
+   "format": "scene",
+   "group": "festivals",
+   "status": "placeholder",
+   "function": "A recurring gathering the player plans around. Presence is the cost — a festival eats most of a day and deepens every bond in the crowd at once.",
+   "in_frame": [
+    "The pillar's hall banked in marigold and jasmine, candle-smoke and the whole city circling — the year's holiest hinge.",
+    "Set at Old City (Nai Wiang).",
+    "A crowd the player is inside, not watching."
+   ],
+   "avoid": [
+    "No tourist framing. Never sort this into authentic vs. for-visitors — it is simply what people do."
+   ],
+   "refs": [],
+   "palette": [
+    "marigold",
+    "lamp",
+    "teak",
+    "ink"
+   ],
+   "file": "art/festivals/festival_inthakhin.png"
+  },
+  {
+   "key": "watch_glyphs",
+   "title": "The eight watches — glyph set",
+   "format": "icon",
+   "group": "ui",
+   "status": "placeholder",
+   "function": "Eight glyphs, one per watch of the coucal day, shown once the player can read the lattice. They replace an ordinary clock in the player's head, so they must be learnable and never confusable with 12-hour time.",
+   "in_frame": [
+    "Eight distinct marks: the still, cold, opening, trading, low, turning, lit and quiet watches.",
+    "A sequence that reads as a cycle, legible at 32px.",
+    "Delivered as one sheet plus eight separate files."
+   ],
+   "avoid": [
+    "Clock hands. Numerals 1–12. Anything that suggests the player's own clock still applies."
+   ],
+   "refs": [],
+   "palette": [
+    "ink",
+    "brass",
+    "lamp",
+    "dull"
+   ],
+   "file": "art/ui/watch_glyphs.png"
+  },
+  {
+   "key": "curse_mark",
+   "title": "The curse — visual language",
+   "format": "icon",
+   "group": "ui",
+   "status": "placeholder",
+   "function": "What a cursed thing or person looks like at a glance, in the bag list and on the status line. It is the same grey the spent silver panels go.",
+   "in_frame": [
+    "A mark that reads as 'this has taken something in and kept it', not as damage or dirt.",
+    "Must sit on an item icon without hiding the item."
+   ],
+   "avoid": [
+    "Skulls, red, cracks, rot. This is a full thing, not a broken one."
+   ],
+   "refs": [],
+   "palette": [
+    "dull",
+    "silver",
+    "ink"
+   ],
+   "file": "art/ui/curse_mark.png"
+  }
+ ]
+}

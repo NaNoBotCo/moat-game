@@ -5,8 +5,9 @@ from __future__ import annotations
 import random
 import textwrap
 
-from . import (checkpoint, clock, festivals, lottery, luck, market, persuasion,
-               relationships, save, skills, story)
+from . import (checkpoint, clock, coucal, curse, dictionary, festivals, lottery,
+               luck, market, noticing, persuasion, rails, relationships, roads,
+               save, skills, story, venues, wealth, works)
 from .character import ATTR_BLURB, ATTRS, BACKGROUNDS, Character
 from .dice import Outcome, roll
 from .items import OFFERINGS, get
@@ -56,6 +57,9 @@ class Game:
             pc.add_health(pc.day - prev_day)   # a dented body mends with rest
             for line in luck.roll_day(pc, self.rng):   # the day's omen & hidden tilt
                 _p(line)
+            if curse.clamp_luck(pc):
+                _p("Whatever sign the morning gave you, it does not reach you. "
+                   "It has not since the gate.")
             for line in lottery.settle(pc, self.rng):  # any lottery draw now landed
                 _p(line)
             market.settle(pc.market)
@@ -63,12 +67,32 @@ class Game:
                 self._render(market.daily_upkeep(pc))
             for note in relationships.daily_decay(pc, pc.day):
                 _p(note)
+            for _ in range(pc.day - prev_day):     # the pile never sleeps
+                for line in rails.daily(pc, self.rng).lines:
+                    _p(line)
+                before = wealth.band(pc)
+                wealth.leak(pc)                    # the secret gets out on its own
+                if wealth.band(pc).key != before.key:
+                    _p(f"Word has moved. You are read as "
+                       f"{wealth.band(pc).name} now.")
+            for line in roads.daily(pc):
+                _p(line)
+            self._bust_out_check()
             self._announce_festivals()
             note = story.deadline_note(pc)
             if note:
                 _p(note)
             for line in story.advance(pc):
                 _p(line)
+
+        # The bird, and anything the player was standing there to see.
+        noticing.init(pc)
+        for m in coucal.crossings(pc.minutes - minutes, pc.minutes):
+            noticing.observe_flip(pc, m % (24 * 60))
+            for line in noticing.hear_call(pc, m % (24 * 60)):
+                _p(line)
+        for line in noticing.check_noticed(pc):
+            _p(line)
 
         # A lottery seller might drift up out of the lane while time passes.
         # (Transient — they walk on when you move.) Only if a draw's still coming
@@ -124,7 +148,15 @@ class Game:
         pc = self.pc
         _p(f"== {pc.name} — {BACKGROUNDS[pc.background]['name']} ==")
         print(f"  {_clock(pc)}   Location: {DISTRICTS[pc.location].name}")
-        print(f"  Baht: {pc.baht:,}")
+        for line in rails.summary(pc):
+            print(f"  {line}")
+        print(f"  {wealth.status_line(pc)}")
+        cline = curse.status_line(pc)
+        if cline:
+            print(f"  {cline}")
+        mline = roads.status_line(pc)
+        if mline:
+            print(f"  {mline}")
         print("  " + "   ".join(f"{a.title()} {pc.mod(a):+d}" for a in ATTRS))
         print("  " + _bar("Heat", pc.heat, 10))
         print("  " + _bar("Stress", pc.stress, 9))
@@ -137,6 +169,227 @@ class Game:
             tails = ", ".join(f"{t['tail']} (day {t['draw_day']})"
                               for t in pc.tickets)
             print(f"  Lottery held: {tails}")
+
+    # --- the trade's own words ---------------------------------------------
+    def words(self) -> None:
+        """Your vocabulary — and what the trade hears when you open your mouth."""
+        pc = self.pc
+        held = dictionary.known(pc)
+        _p("== The words you have ==")
+        _p(dictionary.fluency_note(pc))
+        print(f"  Fluency {dictionary.fluency(pc)}/5   "
+              f"({len(held)} of {len(dictionary.all_words())} words)")
+        if not held:
+            _p("")
+            _p("You have picked up nothing yet. Words come from appraising, from "
+               "listening at stalls, and from anyone who agrees to teach you.")
+        opts: list[tuple[str, object]] = []
+        for key, label, n in dictionary.domains():
+            opts.append((f"{label} ({sum(1 for w in held if w['domain'] == key)}"
+                         f"/{n})", key))
+        pick = self._choose(opts, "Which words — press a number")
+        if pick is None:
+            return
+        _p("")
+        for w in dictionary.in_domain(pick):
+            if w["term"] in pc.words:
+                print(f"  {w['term']}  ({w['roman']})  — {w['rarity']}")
+                for line in textwrap.wrap(w["en"], WRAP - 6):
+                    print(f"      {line}")
+            else:
+                print(f"  {'·' * 6}  ({w['roman'][:2]}…)  — a word you have "
+                      f"heard but cannot yet use")
+        _p("")
+        _p(dictionary.attribution())
+
+    # --- what's around you --------------------------------------------------
+    def around(self) -> None:
+        """The shopfronts on this lane, and which of them are open right now."""
+        pc = self.pc
+        here = venues.in_district(pc.location)
+        if not here:
+            _p("No shopfronts are catalogued on this lane yet.")
+            return
+        now = venues.open_now(pc.location, pc.minutes)
+        anchors = venues.anchors(pc.location)
+        _p(f"== Around you — {DISTRICTS[pc.location].name} ==")
+        print(f"  {len(here):,} shopfronts. {len(now):,} of them open at "
+              f"{clock.hhmm(pc.minutes)}.")
+        if anchors:
+            _p("")
+            _p("Places you know by name:")
+            for v in anchors[:8]:
+                print(f"  {v.name()}  — {v.window_label()}")
+        timed = [v for v in now if v.open is not None][:10]
+        if timed:
+            _p("")
+            _p("Open now:")
+            for v in timed:
+                print(f"  {v.descriptor}  — {v.window_label()}")
+        if noticing.lattice_visible(pc):
+            _p("")
+            _p(f"The lattice: {coucal.label(pc.minutes)}. Next hinge in "
+               f"{coucal.to_next_boundary(pc.minutes)} minutes.")
+        narrow = venues.narrow_windows(pc.location)
+        if narrow:
+            _p("")
+            _p(f"{len(narrow)} of these keep hours too narrow to be about "
+               f"selling anything. Learning whose is which is the work.")
+        _p("")
+        _p(venues.attribution())
+
+    # --- the pile and its rail --------------------------------------------
+    def money(self) -> None:
+        """The passbook, the sacks, or the seed phrase — whatever you chose."""
+        pc = self.pc
+        _p("== Your money ==")
+        for line in rails.summary(pc):
+            print(f"  {line}")
+        opts: list[tuple[str, object]] = [
+            ("Move money onto the rail", self._deposit_flow),
+            ("Draw money into your pocket", self._withdraw_flow),
+        ]
+        state = rails.thai_bank_state(pc)
+        if state == "deposit":
+            opts.append((f"Open a Thai bank account — walk in with "
+                         f"{rails.THAI_BANK_DEPOSIT:,}฿", self._thai_bank_flow))
+        elif state == "talk":
+            opts.append(("Open a Thai bank account — talk your way in",
+                         self._thai_bank_flow))
+        elif state == "both":
+            opts.append(("Open a Thai bank account — money or charm, your pick",
+                         self._thai_bank_flow))
+        if "thai_bank" in pc.rails_open and pc.rail != "thai_bank":
+            opts.append(("Bind the pile to your Thai account", self._to_thai_bank))
+        act = self._choose(opts, "Money — press a number")
+        if callable(act):
+            act()
+
+    def _ask_amount(self, cap: int, prompt: str) -> int:
+        raw = self._ask(f"{prompt}  (a number, or 'all' for {cap:,}฿)")
+        if raw is None:
+            return 0
+        raw = raw.strip().lower().replace(",", "")
+        if raw in ("all", "max"):
+            return cap
+        return int(raw) if raw.isdigit() else 0
+
+    def _deposit_flow(self) -> None:
+        pc = self.pc
+        amount = self._ask_amount(pc.baht, "How much onto the rail?")
+        ok, msg = rails.deposit(pc, amount)
+        _p(msg)
+        if ok and pc.rail == "cash" and amount > 0:
+            self.advance(20)
+
+    def _withdraw_flow(self) -> None:
+        pc = self.pc
+        amount = self._ask_amount(pc.reserve, "How much into your pocket?")
+        ok, msg = rails.withdraw(pc, amount)
+        _p(msg)
+        if ok and amount > 0:
+            kind = ("heavy_haul" if pc.rail == "cash"
+                    and rails.weight_kg(amount) > 20 else "big_withdrawal")
+            if amount >= 200_000:
+                note = wealth.saw(pc, kind)
+                if note:
+                    _p(note)
+            self.advance(rails.RAILS[pc.rail].withdraw_minutes)
+
+    def _to_thai_bank(self) -> None:
+        pc = self.pc
+        moved = pc.reserve
+        pc.rail = "thai_bank"
+        pc.rail_frozen = False
+        _p(f"The passbook takes it. {moved:,}฿ stops being a room and starts "
+           f"being a number, and the branch manager will remember your face for "
+           f"the rest of your life.")
+        self.advance(90)
+
+    def _thai_bank_flow(self) -> None:
+        """Two doors into the formal economy: a large deposit, or pure charm."""
+        pc = self.pc
+        state = rails.thai_bank_state(pc)
+        doors: list[tuple[str, object]] = []
+        if state in ("deposit", "both"):
+            doors.append((f"Put {rails.THAI_BANK_DEPOSIT:,}฿ on the desk", "deposit"))
+        if state in ("talk", "both"):
+            doors.append(("Sit down and talk to the manager", "talk"))
+        if not doors:
+            _p("No door into the branch is open to you today.")
+            return
+        door = self._choose(doors, "The branch — press a number")
+        if door is None:
+            return
+        self.advance(120)
+
+        if door == "deposit":
+            need = rails.THAI_BANK_DEPOSIT
+            # A deposit is not a fee — but you have to be able to actually put
+            # it on the desk, which means getting it out of wherever it lives.
+            if pc.baht < need and (not rails.rail_live(pc) or pc.rail_frozen
+                                   or (need - pc.baht) > pc.reserve):
+                _p("You cannot get that much money to the desk today.")
+                return
+            hauled = max(0, need - pc.baht)
+            if hauled and pc.rail == "cash":
+                _p(f"Getting {need:,}฿ to the branch means moving "
+                   f"{rails.weight_note(hauled)} of notes and coin across the "
+                   f"city, in daylight, past people who count for a living.")
+                pc.add_heat(1)
+            _p("Nobody counts it in front of you. A junior is sent for tea, then "
+               "for a supervisor, then for a form. Two hours later you have a "
+               "passbook with your name spelled almost right.")
+            pc.rails_open = [*pc.rails_open, "thai_bank"]
+            note = wealth.saw(pc, "branch_visit")
+            if note:
+                _p(note)
+            self._to_thai_bank()
+            return
+
+        # The charm door.
+        att = rails.open_thai_bank_by_talk(pc, self.rng)
+        for n in att.notes:
+            _p(n)
+        _p(att.roll.describe())
+        if att.outcome == Outcome.STRONG:
+            _p("She laughs twice, asks about your grandmother's village, and "
+               "signs the form herself. The papers will catch up later; here, "
+               "they always do.")
+            pc.rails_open = [*pc.rails_open, "thai_bank"]
+            self._to_thai_bank()
+        elif att.outcome == Outcome.WEAK:
+            _p("She likes you. She does not like the file. Come back with "
+               "somebody who will vouch for you in person — or with enough "
+               "money that the file stops being the point.")
+            pc.add_stress(1)
+        else:
+            _p("The form goes into a drawer that does not open again. Word "
+               "gets around the branch network; the next desk will be colder.")
+            pc.add_stress(1)
+            pc.add_heat(1)
+
+    def _bust_out_check(self) -> None:
+        """Zero on the rail and zero in the pocket: pick a new rail, and grind."""
+        pc = self.pc
+        if not rails.is_busted(pc):
+            return
+        _p("")
+        _p("== You are cleaned out ==")
+        _p("Not a note in your pocket and nothing on the rail. This is where "
+           "most people in this city already live, and it is survivable — but "
+           "you start again at the bottom, by hand, and nobody is going to be "
+           "impressed by what you used to have.")
+        opts = [(rails.RAILS[k].name, k) for k in rails.RAILS
+                if k != pc.rail and (rails.RAILS[k].openable or k in pc.rails_open)]
+        choice = self._choose(opts, "Bind yourself to which rail?")
+        if choice is None:
+            choice = opts[0][1]
+        rails.start_grind(pc, choice)
+        _p(f"You bind to {rails.RAILS[choice].name.split(' —')[0].lower()}. It "
+           f"opens cold: it holds nothing and protects nothing until you have "
+           f"carried {rails.GRIND_BAHT:,}฿ into it by hand. Get to work.")
+        pc.baht = max(pc.baht, 200)   # bus fare and one bowl of noodles
 
     def inventory(self) -> None:
         pc = self.pc
@@ -262,10 +515,26 @@ class Game:
             return
 
         self.lottery = None   # any seller here was working this lane, not the next
-        if target.crossing:
+
+        shut = roads.closure(pc, pc.day, pc.location, target.to, "inner")
+        if shut:
+            _p(shut.note)
+            if shut.impassable:
+                _p("There is no way round it today. You will have to go "
+                   "another way, or wait for another day.")
+                self.advance(20)
+                return
+            _p(f"You get through, eventually. (+{shut.extra} minutes)")
+            self.advance(shut.extra)
+
+        minutes = int(target.minutes * roads.travel_factor(pc))
+        if target.crossing and roads.gates_exist(pc):
             self._cross(target)
         else:
-            self.advance(target.minutes)
+            if target.crossing and not roads.gates_exist(pc):
+                _p("You walk across where the water used to be. There is grass, "
+                   "and a kerb, and nobody at all.")
+            self.advance(minutes)
             pc.location = target.to
             _p(f"You make your way to {DISTRICTS[target.to].name}.")
             self.look()
@@ -353,6 +622,20 @@ class Game:
             elif e.kind == "not_enough":
                 _p(f"\u201cYou want sell {e.want}? But you have only {e.have} lah. "
                    f"Bring more, we do business.\u201d")
+            elif e.kind == "bought" and curse.at_cursed_gate(self.pc):
+                move = ("" if e.new_buy == e.unit
+                        else f"  (price now {e.new_buy:,}฿ \u2191)")
+                _p(f"Bought {e.qty}x {e.name} for {e.cost:,}฿. "
+                   f"Baht: {e.baht:,}.{move}")
+                key = self._resolve_item_name(e.name)
+                for line in curse.take(self.pc, key):
+                    _p(line)
+                traded = True
+            elif e.kind == "sold" and curse.at_cursed_gate(self.pc):
+                _p(f"Sold {e.qty}x {e.name} for {e.gain:,}฿. Baht: {e.baht:,}.")
+                for line in curse.take(self.pc):
+                    _p(line)
+                traded = True
             elif e.kind == "bought":
                 move = ("" if e.new_buy == e.unit
                         else f"  (price now {e.new_buy:,}฿ \u2191)")
@@ -457,13 +740,230 @@ class Game:
             _p(it.note)
             _p(f"Fair value around {it.base_price:,}฿. You'd know a fake at a "
                f"glance.")
+            self._pick_up_word(it)
         elif rl.outcome is Outcome.WEAK:
             _p(it.note)
             _p("You can vouch for the broad strokes, not the fine detail.")
+            if self.rng.random() < 0.4:
+                self._pick_up_word(it)
         else:
             _p("You can't get a clean read — could be a masterwork, could be a "
                "temple-market fake. (+1 stress)")
             pc.add_stress(1)
+
+    def _pick_up_word(self, it) -> None:
+        """Reading a thing closely teaches you what the trade calls its parts."""
+        pc = self.pc
+        domain = "amulet" if it.kind == "amulet" else "medicine"
+        pool = [w for w in dictionary.in_domain(domain)
+                if w["term"] not in pc.words]
+        if not pool:                       # fall back to anything still unknown
+            pool = [w for w in dictionary.all_words()
+                    if w["term"] not in pc.words]
+        if not pool:
+            return
+        # The commoner a word is in the real trade, the sooner you meet it.
+        pool.sort(key=lambda w: -w["listings"])
+        w = pool[0] if self.rng.random() < 0.7 else self.rng.choice(pool)
+        before = dictionary.fluency(pc)
+        if dictionary.learn(pc, w["term"]):
+            _p(f"\u2726 A word settles: {w['term']} ({w['roman']}) — {w['en']}")
+            after = dictionary.fluency(pc)
+            if after > before:
+                _p(f"  {dictionary.fluency_note(pc)}")
+
+    # --- inside the wall: the four quarters and the middle ------------------
+    def _menu_quarters(self) -> None:
+        """Walk the old city on foot. The grid never changes; learn it once."""
+        pc = self.pc
+        st = noticing.state(pc)
+        here = st.get("here", "centre")
+        opts = [(f"{name}  —  {blurb}", key)
+                for key, (name, blurb) in noticing.QUARTERS.items()
+                if key != here]
+        pick = self._choose(opts, "Walk where — press a number")
+        if pick is None:
+            return
+        st["here"] = pick
+        _p(f"You walk to {noticing.QUARTERS[pick][0]}.")
+        _p(noticing.QUARTERS[pick][1])
+        self.advance(noticing.WALK_MINUTES)
+
+    def wait_here(self) -> None:
+        """Stand about and let time pass. Sometimes that is the whole move."""
+        pc = self.pc
+        _p("You find a step, and wait.")
+        self.advance(60)
+        noticing.note_wait(pc, pc.minutes)
+        if noticing.can_search(pc):
+            _p("You are in the right quarter. Go and look for it.")
+
+    def search_quarter(self) -> None:
+        for line in noticing.search(self.pc):
+            _p(line)
+        self.advance(4 * 60)
+        for line in story.begin(self.pc):     # the pillar arc opens here
+            _p(line)
+
+    # --- great works --------------------------------------------------------
+    def great_works(self) -> None:
+        pc = self.pc
+        _p("== Great works ==")
+        _p("Money at this size is only interesting once it stops being money. "
+           "Instalments come off the rail, and none of this can be done quietly.")
+        for line in works.summary(pc):
+            print(line)
+        opts = []
+        for key, w in works.WORKS.items():
+            if works.complete(pc, key):
+                continue
+            opts.append((f"{w.name} — {works.remaining(pc, key):,}฿ to go", key))
+        if not opts:
+            _p("Every great work is finished. That is a strange sentence to read.")
+            return
+        pick = self._choose(opts, "Fund which work — press a number")
+        if pick is None:
+            return
+        w = works.WORKS[pick]
+        _p("")
+        _p(w.blurb)
+        _p(f"Wanted: {works.remaining(pc, pick):,}฿.   On the rail: {pc.reserve:,}฿.")
+        amount = self._ask_amount(min(pc.reserve, works.remaining(pc, pick)),
+                                  "How much this instalment?")
+        if amount <= 0:
+            return
+        landed, lines = works.fund(pc, pick, amount)
+        for line in lines:
+            _p(line)
+        if amount >= works.MIN_INSTALMENT:
+            note = wealth.saw(pc, "big_project")
+            if note:
+                _p(note)
+        self.advance(120)
+
+    def live_small(self) -> None:
+        """Spend days being nobody in particular."""
+        pc = self.pc
+        drop, line = wealth.live_small(pc)
+        _p(line)
+        self.advance(3 * 24 * 60)
+
+    def silver_temple(self) -> None:
+        """The Silver Temple on the silver road — where a curse comes off."""
+        pc = self.pc
+        _p("== The Silver Temple ==")
+        _p("The hall is clad head to foot in worked silver, panel over panel, "
+           "every one beaten on this road by people whose grandparents beat the "
+           "ones behind them. At night the lamps come back at you off every "
+           "surface at once — except where they don't. Perhaps one panel in "
+           "twenty has gone the grey of a cold sky and takes no light at all, "
+           "and those are the ones the smiths are always up a ladder replacing.")
+        _p("The work is done at the fire in the compound. Behind it is a shed, "
+           "and in the shed is a rack, and on the rack are fifty years of dull "
+           "grey sheets nobody will melt down.")
+        if not curse.marks(pc):
+            _p("")
+            _p("Nothing is on you. The smith looks you over, says so, and goes "
+               "back to work.")
+            self.advance(20)
+            return
+        _p("")
+        _p(f"You are carrying {curse.marks(pc)}. Silver and the smith's hours "
+           f"run {curse.LIFT_COST:,}฿ apiece.")
+        opts: list[tuple[str, object]] = [("Have it taken off you", None)]
+        for key in curse.cursed_items(pc):
+            if pc.has(key):
+                opts.append((f"Put {get(key).name} in the silver overnight", key))
+        pick = self._choose(opts, "The Silver Temple — press a number")
+        if pick is None and opts[0][1] is not None:
+            return
+        for line in curse.lift(pc, pick, self.rng):
+            _p(line)
+        self.advance(curse.LIFT_MINUTES)
+
+    # --- the ways, and the water --------------------------------------------
+    def roadworks(self) -> None:
+        """What is shut today, what you can seal, and the one door marked FILL."""
+        pc = self.pc
+        _p("== The ways in and out ==")
+        line = roads.status_line(pc)
+        if line:
+            _p(line)
+
+        shut_today = []
+        for e in neighbors(pc.location):
+            c = roads.closure(pc, pc.day, pc.location, e.to, "inner")
+            if c:
+                shut_today.append((DISTRICTS[e.to].name, c))
+        for r in routes_from(region_of(pc.location), pc.projects):
+            c = roads.closure(pc, pc.day, pc.location, r.arrive, "intercity")
+            if c:
+                shut_today.append((DISTRICTS[r.arrive].name, c))
+        if shut_today:
+            _p("")
+            _p("Shut or slow from here today:")
+            for name, c in shut_today:
+                tag = "IMPASSABLE" if c.impassable else f"+{c.extra} min"
+                print(f"  {name} — {c.kind} [{tag}]")
+        else:
+            _p("")
+            _p("Everything out of here is open today, which is worth knowing "
+               "and worth using.")
+
+        opts: list[tuple[str, object]] = []
+        for e in neighbors(pc.location):
+            if DISTRICTS[pc.location].zone == "inside" or DISTRICTS[e.to].zone == "inside":
+                continue
+            if roads.sealed(pc, pc.location, e.to):
+                continue
+            opts.append((f"Seal the road to {DISTRICTS[e.to].name} "
+                         f"— {roads.SEAL_COST:,}฿", ("seal", e.to)))
+        if roads.moat_filled(pc):
+            opts.append((f"Dig the moat back out "
+                         f"({roads.DIG_COST - roads.state(pc).get('dig_paid', 0):,}฿ "
+                         f"to go)", ("dig", None)))
+        elif pc.reserve >= roads.FILL_COST:
+            opts.append((f"Fill in the moat — {roads.FILL_COST:,}฿",
+                         ("fill", None)))
+        if not opts:
+            return
+        pick = self._choose(opts, "The ways — press a number")
+        if pick is None:
+            return
+        what, where = pick
+        if what == "seal":
+            ok, lines = roads.seal(pc, pc.location, where)
+            for line in lines:
+                _p(line)
+            if ok:
+                self.advance(3 * 24 * 60)
+                note = wealth.saw(pc, "big_project")
+                if note:
+                    _p(note)
+        elif what == "fill":
+            _p("")
+            _p("There would be no gates. Not shut gates — none. Nothing for a "
+               "customs post to sit on, nothing for a scanner to span, and no "
+               "one anywhere with the standing to search you.")
+            _p("")
+            _p("The water is the oldest agreement this city has, and you have "
+               "met at least one thing that lives in it.")
+            sure = self._choose([("Fill it in", True)], "Choose wisely")
+            if not sure:
+                return
+            for line in roads.fill(pc):
+                _p(line)
+            self.advance(roads.FILL_DAYS * 24 * 60)
+            note = wealth.saw(pc, "big_project")
+            if note:
+                _p(note)
+        elif what == "dig":
+            amount = self._ask_amount(pc.reserve, "How much into the dig?")
+            done, lines = roads.dig_out(pc, amount)
+            for line in lines:
+                _p(line)
+            if done:
+                self.advance(30 * 24 * 60)
 
     def rest(self) -> None:
         pc = self.pc
@@ -1339,8 +1839,24 @@ class Game:
         if pc.baht < mode.cost:
             _p(f"That fare is {mode.cost}฿; you can't cover it.")
             return
+        # The roads out of town go constantly. Rail is the one thing a closure
+        # on the highway cannot touch — which is the whole argument for it.
+        shut = roads.closure(pc, pc.day, pc.location, route.arrive, "intercity")
+        if shut and mode.name != "train":
+            _p(shut.note)
+            if shut.impassable:
+                _p("The road is shut and there is no way round a mountain. "
+                   "Another day, another mode, or another route.")
+                self.advance(30)
+                return
+            _p(f"You crawl through it. (+{shut.extra} minutes)")
+            self.advance(shut.extra)
+        elif shut and mode.name == "train":
+            _p("The road is shut today. The train does not care, and neither "
+               "do you.")
+
         pc.baht -= mode.cost
-        self.advance(mode.minutes)
+        self.advance(int(mode.minutes * roads.travel_factor(pc)))
         _p(f"You take the {mode.name} toward {DISTRICTS[route.arrive].name}.")
         if mode.danger:
             hz = roll(pc.mod("nerve") - mode.danger, rng=self.rng)
@@ -1608,6 +2124,11 @@ class Game:
                                  "needs an offering)", self.sadao))
         if ("market" in feats or "night" in feats) and crowd:
             here_now.append(("Take on a food dare to win face", self._menu_feast))
+        if "silver_temple" in feats:
+            label = "The Silver Temple"
+            if curse.marks(pc):
+                label += f"   \u2726 {curse.marks(pc)} to take off you"
+            here_now.append((label, self.silver_temple))
         if "pharmacy" in feats:
             here_now.append(("The chemist's \u2014 remedies & quiet potion trade",
                              self.pharmacy))
@@ -1622,6 +2143,16 @@ class Game:
                      if pc.courier_ready
                      else "Call Aof's riders to run your load past a gate")
             here_now.append((label, self.courier))
+
+        if pc.location == "old_city":
+            st = noticing.state(pc)
+            here = noticing.QUARTERS[st.get("here", "centre")][0]
+            here_now.append((f"Walk the old city on foot (you're in {here})",
+                             self._menu_quarters))
+            if noticing.can_search(pc):
+                here_now.append(("★ Search this quarter for the clock",
+                                 self.search_quarter))
+        here_now.append(("Wait here a while", self.wait_here))
 
         # -- Go: movement -----------------------------------------------------
         go: list[tuple[str, object]] = []
@@ -1650,7 +2181,13 @@ class Game:
             _, color = luck.weekday_color(pc.day)
             day.append((f"Dress in today's lucky colour ({color}) \u2014 court "
                         f"the day's luck", self.dress))
+        mlabel = "Your money — the pile and its rail"
+        if pc.rail_grind > 0:
+            mlabel += f"   ⚠ cold ({pc.rail_grind:,}฿ to go)"
+        elif pc.rail_frozen:
+            mlabel += "   ⚠ frozen today"
         day += [
+            (mlabel, self.money),
             ("Check your bag", self.inventory),
             ("Rest / lie low (6 hours)", self.rest),
             ("Sleep until dawn (end the day)", self.sleep),
@@ -1670,6 +2207,8 @@ class Game:
         """The long tail: everything you reach for now and then."""
         opts: list[tuple[str, object]] = [
             ("Look around (describe this place)", self.look),
+            ("The shopfronts on this lane (and what's open)", self.around),
+            ("The words you have (trade vocabulary)", self.words),
             ("The festival calendar", self.calendar),
             ("Cook food", self._menu_cook),
             ("Practice a skill", self._menu_practice),
@@ -1679,7 +2218,10 @@ class Game:
             ("Your skills", self.show_skills),
             ("Character sheet", self.status),
             ("Map of the region", self.show_map),
-            ("Fund the northern railway", lambda: self.invest("")),
+            ("Great works (fund something enormous)", self.great_works),
+            ("The ways in and out (closures, roads, the moat)", self.roadworks),
+            ("Live small for a few days (be nobody in particular)",
+             self.live_small),
             ("Save / load", self._menu_save),
             ("Help (and typed commands)", self.help),
         ]
@@ -1841,6 +2383,22 @@ class Game:
             self.sleep()
         elif cmd in ("status", "stat", "sheet"):
             self.status()
+        elif cmd in ("money", "bank", "pile", "rail"):
+            self.money()
+        elif cmd in ("words", "vocab", "dictionary"):
+            self.words()
+        elif cmd in ("around", "shops", "lane"):
+            self.around()
+        elif cmd in ("wait",):
+            self.wait_here()
+        elif cmd in ("roads", "ways", "moat"):
+            self.roadworks()
+        elif cmd in ("silver", "temple"):
+            self.silver_temple()
+        elif cmd in ("quarter", "quarters", "inside"):
+            self._menu_quarters()
+        elif cmd in ("works", "great", "project", "projects"):
+            self.great_works()
         elif cmd == "save":
             path = save.save(self.pc)
             _p(f"Saved to {path}.")
@@ -1860,8 +2418,13 @@ class Game:
         pc = self.pc
         print()
         print("=" * WRAP)
+        purse = f"{pc.baht:,}฿"
+        if pc.reserve or pc.rail_grind:
+            tag = ("cold" if pc.rail_grind else
+                   "frozen" if pc.rail_frozen else rails.RAILS[pc.rail].key)
+            purse += f"  (+{pc.reserve:,}฿ {tag})"
         print(f"  {_clock(pc)}   \u00b7   {DISTRICTS[pc.location].name}"
-              f"   \u00b7   {pc.baht:,}฿")
+              f"   \u00b7   {purse}")
         cond = f"  Heat {pc.heat}/10   Stress {pc.stress}/9"
         if pc.health < 10:
             cond += f"   Health {pc.health}/10"
@@ -1870,12 +2433,16 @@ class Game:
             cond += f"   \u2022 carrying customs-heat {carried}"
         print(cond)
         print("-" * WRAP)
-        for line in textwrap.wrap("\u2192 " + story.objective(pc), WRAP - 2):
-            print("  " + line)
+        obj = noticing.objective(pc)
+        if obj is None and story.started(pc):
+            obj = story.objective(pc)      # the pillar arc, once it's yours
+        if obj:
+            for line in textwrap.wrap("\u2192 " + obj, WRAP - 2):
+                print("  " + line)
         print("=" * WRAP)
 
     def run(self) -> None:
-        # Set the opening beat before the first banner so the objective reads true.
+        noticing.init(self.pc)
         for line in story.advance(self.pc):
             _p(line)
         # A fresh smuggler wakes to their first omen (loaded saves keep theirs).

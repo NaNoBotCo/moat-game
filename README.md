@@ -6,12 +6,17 @@ to the real Chiang Mai up to 2007. Very Lanna in orientation.
 
 ## Run it
 
+Double-click **`Moat.command`** in Finder — it finds a suitable interpreter on
+its own. From a shell:
+
 ```
-cd moat
-python3 -m game
+cd moat-game
+python3.13 -m game
 ```
 
-Or double-click **`Moat.command`** in Finder.
+Needs **Python 3.12+**. Apple's stock `/usr/bin/python3` is 3.9 and cannot parse
+this codebase, and Homebrew's `python@3.13` installs no bare `python3` — so name
+the version explicitly, or let `Moat.command` resolve it.
 
 ## The setting
 
@@ -107,7 +112,9 @@ sours the mood. Deep bonds unlock **heart scenes** — quiet, hand-authored beat
 that reveal who someone really is. The aim is Stardew-plain: you can *really know*
 these people.
 
-### The story — *The Silence of the Pillar*
+### The side arc — *The Silence of the Pillar*
+
+**This is no longer the opening.** It does not exist for you until you have found the coucal clock: only once you can hear the watches do you notice what is missing from them — that the Sao Inthakhin keeps no hour at all. Until then the banner says nothing about it and the journal is empty.
 
 The relationships aren't only a systems layer; they carry a **four-act mystery**
 (`game/story.py`) that reads nothing but the secrets you've been trusted with and
@@ -128,6 +135,186 @@ merely holding secrets, so building real talent matters. A
 day, and you either carry the broken piece back to the pillar before then (the
 city keeps its shade) or you don't (a generation in the sun). Type **`journal`**
 for the tale so far and the days remaining.
+
+### The opening — nobody tells you there is a puzzle
+
+There is no quest-log entry for the first thing you do, and no marker. You
+arrive keeping ordinary time and the city quietly refuses it: a shop is shut at
+eleven and open at 11:37, a tout says come back at the right time and will not
+say when that is, and two lanes that have nothing to do with each other keep
+hours that agree exactly — with each other, never with your watch.
+
+**The coucal clock** (`game/coucal.py`) is why, and it is the one authoritative
+time in the world. Somebody set it in a wat fifty years ago and it has not
+stopped. It keeps **eight watches to the day, beginning 37 minutes after civil
+midnight**, and every window, shift, round and rotation in the city hangs off
+it. No entity keeps private time; everything asks this module.
+
+The quest begins only when you **demonstrate that you have noticed** — by
+waiting out a window on purpose, and by comparing two lanes' hours instead of
+one. Then finding the clock is triangulation, not navigation: the bird sounds
+three times a day, **49 wats inside the wall** are candidates (taken from the
+real city, via Mot Dang), and you stand in a quarter and watch how tightly the
+local shutters answer the call. Three quarters collapses the search to one.
+
+The old city is walkable on foot as five permanent, hand-authored places — the
+four corner quarters and the middle. It never changes. That is the map you keep.
+
+The reward is the lattice itself: afterwards you can read every window in the
+city, and you never walk up to a shut door by accident again.
+
+### The pile and the rails — the opening problem
+
+You do not start poor. You start on **one billion baht** in 20-baht notes and
+coins — **208 tonnes** of money in a room, going soft with damp at the bottom,
+and too big for one person to police. That is the opening problem, and the
+**difficulty setting is nothing but how hard it is to keep**: easy, medium and
+hard change theft, spoilage and how often somebody arrives with a claim. They
+never touch enemy dice.
+
+Money is therefore two numbers: what's **in your pocket** (`baht` — what shops
+and bribes actually take) and what's **on your rail** (`reserve` — the pile).
+Before anything else you bind the pile to a rail, and the rail is a class choice
+wearing a wallet's clothes (`game/rails.py`):
+
+| Rail | Gate | Strong | Fragile |
+|---|---|---|---|
+| **Cash** | none | nothing to freeze or trace; every informal door opens | weight, damp, rats, hands, claimants |
+| **Crypto** | none | weightless, crosses any distance | keys, power, signal; the chain remembers |
+| **Foreign bank** | none at the start | survives fire and flood | assumes papers you may not have; someone else's off switch |
+| **Thai bank** | **earned in play** | local, fast, unremarkable, weightless | you are inside the system, and it files reports |
+
+You cannot pick the **Thai account** at the start. You open one the way anyone
+opens one here: walk in with **25,000,000฿** on the desk, or be so good across
+it that the paperwork follows you — the charm door only unlocks at **Charcha +
+Mahaniyom ≥ 7** and is still a stiff roll. Hauling that much cash to the branch
+is itself a visible act, and costs you heat.
+
+**Busting out is not the end.** If the pile and your pocket both hit zero you
+bind to a different rail — but it opens **cold**: it holds nothing and protects
+nothing until you have carried **120,000฿** into it by hand. That is the grind,
+and it is meant to be unpleasant.
+
+### Suan Prung — the cursed gate, and the silver two hundred metres away
+
+For six hundred years the dead left the city by the south-western gate, and
+custom of that age does not wear off because somebody bolted a scanner to the
+arch. **Every transaction made at Suan Prung is cursed** (`game/curse.py`) —
+not trade in general, not the goods in general: *that* exchange, the one you
+made there, with the road of the dead going past.
+
+Which is exactly why there is a market under the arch, and why it is the best
+market in the city. Nobody decent will trade at the gate of the dead, so the
+spread is the narrowest anywhere (6% against Kad Luang's 18%) and nobody asks a
+single question. A Phra Somdej is **5,583฿** under the arch against **6,969฿**
+on the guild floor.
+
+Then the bill arrives. A curse settles in two places at once:
+
+- **On you.** Your day cannot come up lucky again while you hold one — whatever
+  sign the morning gives you, it does not reach you. Every arch in the city
+  reads it, at +1 scan penalty per curse, for as long as you carry it.
+- **On the goods**, which is worse. A cursed amulet is worth **45%** of its
+  price to any buyer who can read one. That same Phra Somdej now fetches
+  **2,664฿** at Kad Luang instead of 4,843฿.
+
+So the cheap gate is a real trap and a real temptation: you save 1,386฿ and lose
+2,179฿ on the resale — unless you are buying to carry rather than to flip, or
+unless you clean it first.
+
+The remedy stands two hundred metres away, through the gate and down the silver
+road, and that is not a coincidence and never was. **The Silver Temple** has
+been beating consecrated silver on Wualai since long before anyone put a customs
+post on the moat, and here the silver does not decorate the hall so much as
+*hold* what it is given. 4,000฿ and three hours apiece, worked at the fire in
+the compound: either off you, or off the object, which lies overnight on a sheet
+of silver and comes out reading clean. The sheet does not — it goes the grey of
+a cold sky and takes no light again.
+
+That is why one panel in twenty on the hall is dull, why the smiths are always
+up a ladder replacing them, and why there is a rack in the shed behind the fire
+holding fifty years of the south-west gate in flat grey sheets. Everyone knows
+what they are. Nobody melts them down.
+
+*The Silver Temple is the game's own — it takes the silver road and the craft
+from the real Wualai and goes its own way from there. It is not a portrait of
+any actual temple, and none of its rules are anybody's real ones.*
+
+### Being seen — what people think you have
+
+The city runs on **perceived** wealth, not actual (`game/wealth.py`). Perception
+sets your prices, your claimants, and how a room changes when you walk into it,
+and it sorts you into six bands from *nobody in particular* to *the one with the
+money* (prices ×1.0 → ×2.2, claims ×0.4 → ×3.0).
+
+You cannot keep a billion secret, but you can keep it a **rumour**. Left
+untouched, talk only ever reaches about **15% of the truth** — a cash pile sits
+at *a rich person* after three quiet months and stops there. The rest of the
+truth arrives as evidence, and the evidence is your own behaviour: one heavy
+haul takes 125m of rumour to 560m of fact in an afternoon. Withdrawals, branch
+deposits, easy bribes, gifts too fine for the occasion and — loudest of all —
+funding a great work each push perception toward what you really hold. The rail
+matters: cash leaks fastest, a foreign bank slowest. **Live small** for a few
+days to drag it back down.
+
+Money moves some audiences and hardens others: traders, police and customs bend
+to it (up to +3), an abbot does not (−1, because he has met rich penitents), and
+the dead are famously unimpressed.
+
+### The ways in and out — and the water
+
+Everything outside the wall is mutable, and the roads most of all. They close
+constantly (`game/roads.py`), for reasons that are never dramatic: a culvert
+goes, the flats flood, a procession has the road for the afternoon, the mountain
+has put part of itself across the Chiang Rai road again. Closures are seeded from
+the day and the road, so a save replays identically, and they are **symmetric** —
+the same stretch is shut in both directions, because that is what a road is.
+
+The roads out of town go constantly: over 100 days the Chiang Rai corridor is
+shut or crawling **22 times**, against **5** for a stretch inside the outer city.
+This is why navigation is a real skill and why knowing the alternate beats
+knowing the shortest. It is also the argument for the northern railway in one
+number — **a closure on the highway cannot touch a train.**
+
+The player has **some control, outside the wall only**. Seal a stretch for
+12m฿ — base course, drainage, a proper camber, a culvert that will still be there
+next year — and closures on it drop from 5 in 100 days to 1. Inside the wall
+nothing is fundable: the old city is not a thing that gets improved.
+
+#### Filling in the moat
+
+You can do this. It costs 60m฿, which is cheap, and it is the most tempting
+thing in the game, because **a moat with no water is a moat with no gates**.
+Not shut gates — none. Nothing for a customs post to sit on, nothing for a
+scanner arch to span. Every scan you have ever sweated, gone. The arches come
+down within the week because the metal is worth something.
+
+For about a month it is the best decision you have ever made.
+
+Then the wells go strange, and the drains that have run one direction since
+Mangrai stop agreeing about which direction that was. The naga are in the
+hydrology — in this world that is where they live, not a figure of speech — and
+the ring is the oldest agreement the city has. While it is dry: **travel ×2.6,
+prices ×1.4, persuasion −2 with everyone** (they all know what you did), road
+closures double, and the city hands you a fresh curse every week, forever.
+
+You can dig it out. It costs **900m฿** — fifteen times the filling, and nearly
+the price of the northern line — and takes months, and *nothing* lifts until the
+water is back. All of it, not some of it. Then the gates go back up within the
+month, because of course they do, and you will be scanned at every one of them
+for the rest of your life, and you will be glad of it.
+
+### Great works — what the pile is actually for
+
+Buying amulets with a billion baht is bailing the Ping with a cup. Great works
+(`game/works.py`) are funded in instalments off the rail and each has a real
+mechanical consequence: the **northern line to Chiang Rai** (900m฿), **drainage
+under the eastern flats** (340m฿, and the damp stops eating your stash),
+a standing fund for **papers** (180m฿, and claims on your pile halve), a
+**market hall** for the vendor families (260m฿, and they stop pricing you as a
+mark), **restoration of the clock's hall** (120m฿, and the sangha knows who paid),
+and **land assembly ahead of the flood maps** (500m฿ — entirely legal, not
+entirely nice). None of it can be done quietly.
 
 ### Signature actions
 
@@ -155,7 +342,7 @@ Type `help` in-game. Core verbs: `look`, `go`, `map`, `market`, `buy`, `sell`,
 `inv`, `appraise`, `travel`, `invest`, `skills`, `practice`, `learn`, `cook`,
 `commune`, `craft`, `glamour`, `network`, `profile`, `talk`, `give`, `ask`,
 `journal`, `calendar`, `celebrate`, `bargain`, `persuade`, `rumors`, `rest`,
-`sleep`, `status`, `save`/`load`.
+`sleep`, `status`, `money`, `words`, `around`, `wait`, `quarter`, `works`, `silver`, `roads`, `save`/`load`.
 
 ## Code layout
 
@@ -170,12 +357,109 @@ game/
   skills.py      ranks, literacy, practice/teacher rules
   persuasion.py  audience-based negotiation resolver
   clock.py       the day's parts (morning/afternoon/evening/night) & sleep
+  coucal.py      THE clock — eight watches a day; everything subscribes to it
+  curse.py       Suan Prung's price, and the Silver Temple that undoes it
+  roads.py       closures, roads you can pay for, and the moat you can fill in
+  contribute.py  hours observed in the real city, for Mot Dang's atlas
+  noticing.py    the unmarked opening: notice the time, triangulate, find the wat
+  rails.py       the pile, the four payment rails, the grind after a bust-out
+  wealth.py      perceived vs actual money, and how the city treats you for it
+  works.py       great works — where a billion baht goes
+  venues.py      the city's shopfronts + the consent dead-man's switch
+  dictionary.py  the trade's vocabulary and what fluency buys you
   relationships.py contacts, bonds, secrets, schedules, gift tastes, heart scenes
   festivals.py   the Lanna festival calendar — weekly streets, Wan Phra, Inthakhin
   story.py       the four-act arc that reads your secrets & bonds
   engine.py      game loop, commands, time & heat
   __main__.py    entry + character creation
 ```
+
+## The city's real data (`data/`, `tools/`)
+
+The game reads two of NaN's existing bodies of work rather than inventing
+Chiang Mai twice. Both import to JSON, so writers and artists can edit content
+without touching code.
+
+**Mot Dang → the venue layer.** `tools/import_motdang.py` pulls the ~9,000-place
+Chiang Mai catalogue into `data/venues.json`: **1,804 shopfronts inside the
+moat**, real category mix, real opening hours, and **93 places whose hours are
+too narrow to be about selling anything** — the front-business primitive,
+straight out of the real city. What it deliberately drops is identity: no name,
+phone, address, website or exact coordinate survives the import. A venue is *"a
+noodle counter"* until somebody names it.
+
+**wichaa.net → the dictionary.** `tools/import_wichaa.py` pulls the glossary
+into `data/dictionary.json` — 33 terms in Thai, romanised, glossed in English
+and 中文, each carrying how many catalogued manuscripts and market listings
+really use it. That count grades the word: one used by 1,198 listings is stall
+talk, one used by three marks you as someone who reads the old hand. You pick
+words up by appraising things, and your **fluency** decides whether a dealer
+quotes you the first price or the second (`words` in-game).
+
+### The field layer — LINE-first, and it gives back
+
+Mot Dang has 9,075 catalogued places in Chiang Mai and **7,109 of them have no
+opening hours**. Hours are the largest hole in the atlas and the one field a
+crawler fundamentally cannot reach — they live on a hand-lettered card behind a
+grille. This game's core skill is reading windows, so the mechanic *already is*
+the observation. That is the only reason this layer exists.
+
+**LINE-first** (`worker/`): no app store, no account, no password. Share your
+location with the Official Account, get back what is catalogued within 200 m,
+tap OPEN or SHUT. Two taps, no typing. A LIFF page does the same job as a list
+for people who would rather see one, with tap targets sized for one hand
+outdoors in sun.
+
+What it keeps, exhaustively: **which place, the minute, the weekday, open or
+shut**, and a salted hash of the LINE id used only to rate-limit and to count
+one person once per place per day.
+
+What it never keeps: **your location** (used in memory to find what is near you,
+then gone — there is no code path that writes a coordinate to storage), your
+name or LINE id, and **any trace, route or sequence**. Observations are not
+linkable to each other. Rotating `HASH_SALT` makes every past hash unlinkable,
+which is a feature and not a migration problem.
+
+Never collected against: **wats, hospitals, clinics, schools, homes.** The
+exclusion runs at index *build* time, so those places are absent from the lookup
+entirely and no request exists that could record one. 3,343 of 10,673 places are
+excluded; 7,330 remain loggable.
+
+Nothing goes live. Six observations at 75% agreement before a window is even
+proposed; a shut sighting inside a proposed span is reported as a probable
+midday close rather than averaged away. `GET /export` emits a payload for the
+atlas's **moderation queue** — the path a human reads — and never `/claim`,
+which is for an owner speaking about their own business, and never a direct
+write. See `worker/DEPLOY.md` for what is still needed and what is deliberately
+unfinished.
+
+### Naming a real business — consent is a dead-man's switch
+
+Real Chiang Mai businesses **can** appear by name, with the owner's written
+permission, as cross-promotion. Two rules hold, and both are enforced in data
+rather than left to memory (`game/venues.py`, `tools/consent.py`):
+
+1. **A permissioned business is only ever depicted doing its actual trade.** It
+   can be a landmark, a shop you buy from, a teacher, a meeting place. It is
+   never a front, a fence, a drop or a raid. Every criminal role belongs to a
+   fictional composite. Once a venue has been named under consent it is barred
+   from the shadow layer permanently — even after the permission lapses.
+2. **Permission expires on its own.** A grant carries a term (default 180 days).
+   Past it the game stops using the real name by itself and the venue falls back
+   to its descriptor — no code change, no rebuild. Silence *un-names* a business
+   rather than naming it forever, so losing touch with an owner fails safe.
+   `live_consent()` is closed by default and refuses anything malformed,
+   undated, withdrawn or expired.
+
+```
+python3.13 tools/consent.py report            # who is live, lapsing, lapsed
+python3.13 tools/consent.py grant  <key> --name "…" --scope "…" --contact "…"
+python3.13 tools/consent.py renew  <key> --days 180
+python3.13 tools/consent.py withdraw <key>
+```
+
+Place data © OpenStreetMap contributors, ODbL, via Mot Dang — attribution is
+shown in-game and is a separate obligation from any owner's permission.
 
 ## The visual game (`web/`)
 

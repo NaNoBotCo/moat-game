@@ -390,11 +390,36 @@ def attempt_trial(pc, key: str, food_bonus: int = 0, rng=None) -> list[str]:
 
 
 # --- state on the smuggler --------------------------------------------------
+def begin(pc) -> list[str]:
+    """Open the pillar arc. It is a side story now, not the opening.
+
+    The player earns their way in by learning to read the city's time — until
+    then the silence of the Sao Inthakhin is somebody else's problem, and the
+    banner says nothing about it."""
+    if pc.story.get("started"):
+        return []
+    pc.story.update({"started": True, "act": 1, "beats": [], "ending": "",
+                     "epilogue": "", "trials": {}, "anong_turned": False,
+                     "unread": True})
+    return ["",
+            "\u2726 The Silence of the Pillar",
+            "Now that you can hear the watches, you notice what is missing from "
+            "them. The Sao Inthakhin keeps no hour at all. Since the rains the "
+            "city pillar's guardian has said nothing, and the drowned lanes of "
+            "Wiang Kum Kam keep surfacing where the river runs low.",
+            "(Type 'journal' for the tale so far.)"]
+
+
+def started(pc) -> bool:
+    return bool(pc.story.get("started"))
+
+
 def _st(pc) -> dict:
     s = pc.story
     if not s:
         s.update({"act": 1, "beats": [], "ending": "", "epilogue": "",
-                  "trials": {}, "anong_turned": False, "unread": False})
+                  "trials": {}, "anong_turned": False, "unread": False,
+                  "started": False})
     s.setdefault("trials", {})       # forward-compat for older saves
     s.setdefault("anong_turned", False)
     s.setdefault("unread", False)
@@ -403,7 +428,7 @@ def _st(pc) -> dict:
 
 def has_unread(pc) -> bool:
     """True if a beat fired that the player hasn't opened the journal on since."""
-    return _st(pc).get("unread", False)
+    return bool(pc.story.get("started")) and _st(pc).get("unread", False)
 
 
 def act(pc) -> Act:
@@ -461,6 +486,8 @@ def advance(pc) -> list[str]:
     """Fire any beats now earned, move the act, and resolve an ending if due.
 
     Returns prose lines for anything that fired this tick (empty if nothing)."""
+    if not pc.story.get("started"):
+        return []                    # the side arc has not been opened yet
     s = _st(pc)
     out: list[str] = []
     if s["ending"]:

@@ -56,13 +56,27 @@ def persuade(pc, audience: str, difficulty: int = 0,
     lever, base = best_lever(pc, audience)
     attr = SKILLS[lever][2]
     luck = getattr(pc, "luck", 0)
-    modifier = base + bonus - difficulty + luck
+    # People treat you by what they think you're worth. Greed opens a trader and
+    # a bored officer; it closes an abbot, who has met rich penitents before.
+    from . import roads, wealth, works
+    money, money_note = wealth.persuasion_bonus(pc, audience)
+    if audience == "monk":
+        money += works.monk_bonus(pc)
+    dry = roads.persuasion_penalty(pc)
+    if dry:
+        money += dry
+        money_note = ("Everyone who meets you now knows what you did to the "
+                      "water.")
+    modifier = base + bonus - difficulty + luck + money
     rl = roll(modifier, rng=r)
     notes = [f"Best angle: {SKILLS[lever][0]} "
              f"(rank {pc.skill(lever)} + {attr} {pc.mod(attr):+d}"
              + (f", offering {bonus:+d}" if bonus else "")
              + (f", the day {luck:+d}" if luck else "")
+             + (f", how you're read {money:+d}" if money else "")
              + (f", difficulty -{difficulty}" if difficulty else "") + ")."]
+    if money_note:
+        notes.append(money_note)
     # A ghost or deva simply will not hear someone with no way to speak to it.
     if audience in ("phii", "ancestor") and pc.skill("phasa_phii") == 0:
         notes.append("Without any Spirit-speech, your words scatter unheard.")

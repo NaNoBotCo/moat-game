@@ -65,6 +65,15 @@ class Listing:
 
 # Which districts run a market, and their demand character.
 MARKET_PROFILES: dict[str, dict] = {
+    # The gate of the dead. Nobody decent will trade here, so the spread is the
+    # narrowest in the city and nobody asks a single question. See curse.py.
+    "suan_prung": {
+        "name": "Under the arch at Suan Prung",
+        "stock": list(AMULETS) + ["ya_dong_black", "ya_dong", "samun_phrai",
+                                  "takrut"],
+        "demand": {"amulet": 0.78, "potion": 0.8},   # buy cheap here
+        "spread": 0.06,                              # and the house barely cuts
+    },
     "warorot": {
         "name": "Kad Luang guild floor",
         "stock": list(AMULETS) + ["ya_dong", "samun_phrai", "doi_brew", "miang"],
@@ -213,6 +222,12 @@ def buy(pc, district: str, key: str, qty: int, day: int) -> list[Event]:
         return [ev("not_sold_here", key=key)]
     if qty <= 0:
         qty = 1
+    # Stallholders charge what they think you can pay. Being read as rich is a
+    # tax on everything you buy for the rest of your life.
+    from . import roads, wealth, works
+    unit = int(round(lst.buy * wealth.price_multiplier(pc)
+                     * works.price_factor(pc) * roads.price_factor(pc)))
+    lst = Listing(lst.item, unit, lst.sell, lst.drift)
     cost = lst.buy * qty
     if cost > pc.baht:
         afford = pc.baht // lst.buy
@@ -239,6 +254,11 @@ def sell(pc, district: str, key: str, qty: int, day: int) -> list[Event]:
     lst = find_listing(district, day, key, pc.market, heat, fence)
     if not lst:
         return [ev("no_buyer_here", key=key)]
+    # Anyone who can read an amulet can read what came through the gate with it.
+    from . import curse
+    factor = curse.value_factor(pc, key)
+    if factor != 1.0:
+        lst = Listing(lst.item, lst.buy, int(round(lst.sell * factor)), lst.drift)
     gain = lst.sell * qty
     pc.baht += gain
     pc.add_item(key, -qty)
