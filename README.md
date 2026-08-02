@@ -336,9 +336,28 @@ Chiang Rai always sucks** — long, mountainous, dangerous. There is no train no
 — yet: **`invest train <baht>`** funds the Chiang Rai railway build-out, and once
 it's paid for, the rails run where the road never could.
 
+## Playing it
+
+**Numbers change; letters never do.** The numbered list is only what this place,
+at this hour, is actually offering — it is short, and it moves as you move. The
+things you can always do sit on fixed letter keys that are identical on every
+screen in the game, so you learn them once instead of re-reading a sixteen-line
+list every turn:
+
+```
+[B] Bag   [M] Money   [P] People   [K] Skills   [N] News   [J] Journal
+[E] Eat   [W] Wait    [R] Rest     [S] Sleep    [X] More   [?] Help
+```
+
+Amounts are picked from a list rather than typed. A new game opens with thirty
+seconds on how the screen works and the two things that trip everyone up —
+money living in two places, and time rather than baht being the real budget —
+and says nothing whatever about what is worth doing, because that is the part
+you are meant to find.
+
 ## Commands
 
-Type `help` in-game. Core verbs: `look`, `go`, `map`, `market`, `buy`, `sell`,
+You can also type. `help` in-game. Core verbs: `look`, `go`, `map`, `market`, `buy`, `sell`,
 `inv`, `appraise`, `travel`, `invest`, `skills`, `practice`, `learn`, `cook`,
 `commune`, `craft`, `glamour`, `network`, `profile`, `talk`, `give`, `ask`,
 `journal`, `calendar`, `celebrate`, `bargain`, `persuade`, `rumors`, `rest`,

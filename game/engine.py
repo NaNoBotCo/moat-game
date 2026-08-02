@@ -16,18 +16,61 @@ from .world import (DISTRICTS, TRAIN_NORTH_GOAL, neighbors, region_of,
 
 WRAP = 76
 
+# Raw feature keys are for code. These are what a player should read.
+FEATURE_NAMES = {
+    "safehouse": "your room", "shrine": "a spirit shrine",
+    "rumors": "talk worth listening to", "walking_street": "the walking street",
+    "market": "a market", "checkpoint": "a customs gate", "fence": "a fence",
+    "guild": "the traders' guild", "buyers": "buyers",
+    "night": "it wakes at night", "docks": "the jetties",
+    "smuggle_route": "a way round the gates", "monastery": "a monastery",
+    "herbs": "herbs growing", "blessing": "consecration",
+    "pharmacy": "a chemist's", "clinic": "a beauty clinic",
+    "hospital": "the hospital", "silver": "silversmiths",
+    "silver_temple": "the Silver Temple", "kilns": "the kilns",
+    "cursed_market": "trade nobody admits to",
+    "phra_rod_source": "Phra Rod country",
+}
+
 
 def _p(text: str = "") -> None:
+    """Wrap to the terminal, keeping any leading indent on the wrapped lines.
+
+    Without the hanging indent a wrapped bullet flushes left on its second
+    line and stops looking like a bullet, which is exactly the kind of small
+    thing that makes a screen hard to read.
+    """
     for para in text.split("\n"):
         if not para:
             print()
+            continue
+        stripped = para.lstrip(" ")
+        indent = " " * (len(para) - len(stripped))
+        # A numbered or bulleted line hangs under its own text, not its marker.
+        hang = indent
+        for marker in ("\u2022 ", "- "):
+            if stripped.startswith(marker):
+                hang = indent + " " * len(marker)
+                break
         else:
-            print(textwrap.fill(para, WRAP))
+            if len(stripped) > 3 and stripped[0].isdigit() and stripped[1:3] == ". ":
+                hang = indent + "   "
+        print(textwrap.fill(stripped, WRAP, initial_indent=indent,
+                            subsequent_indent=hang))
 
 
 def _clock(pc: Character) -> str:
     return (f"Day {pc.day} \u00b7 {festivals.weekday_name(pc.day)} "
             f"\u00b7 {clock.label(pc.minutes)}")
+
+
+def _money(baht: int) -> str:
+    """Readable at a glance. A billion baht as digits is a wall of commas."""
+    if abs(baht) >= 1_000_000_000:
+        return f"{baht / 1_000_000_000:,.2f} bn\u0e3f"
+    if abs(baht) >= 1_000_000:
+        return f"{baht / 1_000_000:,.1f} m\u0e3f"
+    return f"{baht:,}\u0e3f"
 
 
 def _bar(label: str, value: int, cap: int) -> str:
@@ -119,8 +162,9 @@ class Game:
         d = DISTRICTS[self.pc.location]
         _p(f"== {d.name} ==")
         _p(d.blurb)
-        if d.features:
-            _p("Here: " + ", ".join(d.features))
+        nice = [FEATURE_NAMES[f] for f in d.features if f in FEATURE_NAMES]
+        if nice:
+            _p("Here: " + ", ".join(nice) + ".")
         for f in festivals.here_now(d.key, self.pc.day):
             _p("")
             _p(f"\u273f {f.name} is on here today. {f.blurb} ('celebrate' to join.)")
@@ -132,13 +176,6 @@ class Game:
             _p("People here: " + ", ".join(
                 f"{c.name} ({relationships.tier(relationships.bond_of(self.pc, c.key))})"
                 for c in known_here))
-        exits = neighbors(d.key)
-        if exits:
-            _p("")
-            _p("Ways out:")
-            for i, e in enumerate(exits, 1):
-                tag = "  [MOAT GATE — customs]" if e.crossing else ""
-                print(f"  {i}. {DISTRICTS[e.to].name} ({e.minutes}m){tag}")
         if clock.is_night(self.pc.minutes):
             _p("")
             _p("It's deep night; most doors are shut and most people abed. "
@@ -243,6 +280,10 @@ class Game:
         """The passbook, the sacks, or the seed phrase — whatever you chose."""
         pc = self.pc
         _p("== Your money ==")
+        _p("Your POCKET is what shops, bribes and bowls of noodles actually "
+           "take. Your RAIL is where the pile sits. Moving between the two "
+           "costs time, and a big move gets noticed.")
+        _p("")
         for line in rails.summary(pc):
             print(f"  {line}")
         opts: list[tuple[str, object]] = [
@@ -266,13 +307,29 @@ class Game:
             act()
 
     def _ask_amount(self, cap: int, prompt: str) -> int:
-        raw = self._ask(f"{prompt}  (a number, or 'all' for {cap:,}฿)")
-        if raw is None:
+        """Amounts are picked, not typed. Typing a long number is a chore and
+        this game asks for amounts often."""
+        if cap <= 0:
+            _p("There's nothing there to move.")
             return 0
-        raw = raw.strip().lower().replace(",", "")
-        if raw in ("all", "max"):
-            return cap
-        return int(raw) if raw.isdigit() else 0
+        steps = [1_000, 10_000, 50_000, 250_000, 1_000_000, 25_000_000,
+                 100_000_000, 500_000_000]
+        opts: list[tuple[str, object]] = []
+        for v in steps:
+            if v < cap:
+                opts.append((_money(v), v))
+        opts.append((f"All of it \u2014 {_money(cap)}", cap))
+        opts.append(("Some other amount (type it)", "type"))
+        pick = self._choose(opts, prompt)
+        if pick is None:
+            return 0
+        if pick == "type":
+            raw = self._ask(f"How much?  (digits, up to {cap:,})")
+            if raw is None:
+                return 0
+            raw = raw.strip().lower().replace(",", "").replace("฿", "")
+            return min(cap, int(raw)) if raw.isdigit() else 0
+        return int(pick)
 
     def _deposit_flow(self) -> None:
         pc = self.pc
@@ -2152,7 +2209,6 @@ class Game:
             if noticing.can_search(pc):
                 here_now.append(("★ Search this quarter for the clock",
                                  self.search_quarter))
-        here_now.append(("Wait here a while", self.wait_here))
 
         # -- Go: movement -----------------------------------------------------
         go: list[tuple[str, object]] = []
@@ -2161,69 +2217,81 @@ class Game:
         if routes_from(region_of(pc.location), pc.projects):
             go.append(("Travel to another city", self._menu_travel))
 
-        # -- Story & people ---------------------------------------------------
-        people: list[tuple[str, object]] = []
-        jlabel = "The tale so far (journal)"
-        if story.has_unread(pc):
-            jlabel += "   \u2726 new"
-        people.append((jlabel, self.journal))
-        people.append(("Your web of contacts", self.network))
-        if pc.contacts:
-            people.append(("Look someone up (profile)", self._menu_profile))
-        people.append(("Listen for word on the street", self.rumors))
 
-        # -- Your day: time & upkeep -----------------------------------------
-        day: list[tuple[str, object]] = [
-            ("Grab a bite (cheap street food \u2014 +health, -stress)",
-             self.grab_bite),
-        ]
+        # -- Your day: only the once-a-day, easy-to-miss things ---------------
+        day: list[tuple[str, object]] = []
         if not pc.dressed_today:
             _, color = luck.weekday_color(pc.day)
-            day.append((f"Dress in today's lucky colour ({color}) \u2014 court "
-                        f"the day's luck", self.dress))
-        mlabel = "Your money — the pile and its rail"
-        if pc.rail_grind > 0:
-            mlabel += f"   ⚠ cold ({pc.rail_grind:,}฿ to go)"
-        elif pc.rail_frozen:
-            mlabel += "   ⚠ frozen today"
-        day += [
-            (mlabel, self.money),
-            ("Check your bag", self.inventory),
-            ("Rest / lie low (6 hours)", self.rest),
-            ("Sleep until dawn (end the day)", self.sleep),
-        ]
+            here_now.append((f"Dress in today's lucky colour ({color}) \u2014 "
+                             f"court the day's luck", self.dress))
+        # (bag, money, rest, sleep and the rest live on fixed keys now)
 
+        # Only what THIS place and THIS hour offer gets a number. Everything
+        # you can always do lives on a fixed letter key that never moves, so
+        # the numbers stay short and a player can build muscle memory for the
+        # rest instead of re-reading a sixteen-line list every turn.
         sections = []
         if here_now:
             sections.append(("Here & now", here_now))
-        sections.append(("Go", go))
-        sections.append(("Story & people", people))
-        sections.append(("Your day", day))
-        sections.append(("", [("More\u2026 (craft, cook, skills, map, save)",
-                               self._menu_more)]))
+        if go:
+            sections.append(("Go", go))
         return sections
+
+    # Fixed keys. These NEVER change position, never renumber, and are the
+    # same on every screen in the game.
+    def _fixed_keys(self) -> list[tuple[str, str, object]]:
+        pc = self.pc
+        eat = "Eat" if pc.health >= 8 else "Eat (you need it)"
+        money = "Money"
+        if pc.rail_grind:
+            money += " ⚠"
+        elif pc.rail_frozen:
+            money += " ⚠"
+        journal = "Journal"
+        if story.has_unread(pc):
+            journal += " ✦"
+        return [
+            ("B", "Bag", self.inventory),
+            ("M", money, self.money),
+            ("P", "People", self.network),
+            ("K", "Skills", self.show_skills),
+            ("N", "News", self.rumors),
+            ("J", journal, self.journal),
+            ("E", eat, self.grab_bite),
+            ("W", "Wait", self.wait_here),
+            ("R", "Rest", self.rest),
+            ("S", "Sleep", self.sleep),
+            ("X", "More", self._menu_more),
+            ("?", "Help", self.help),
+        ]
 
     def _menu_more(self) -> None:
         """The long tail: everything you reach for now and then."""
+        pc = self.pc
+        # Ordered by how often you actually reach for it. Anything already on
+        # a fixed key ([K] skills, [?] help) is deliberately not repeated here.
         opts: list[tuple[str, object]] = [
-            ("Look around (describe this place)", self.look),
+            ("Look around (describe this place again)", self.look),
             ("The shopfronts on this lane (and what's open)", self.around),
-            ("The words you have (trade vocabulary)", self.words),
-            ("The festival calendar", self.calendar),
-            ("Cook food", self._menu_cook),
             ("Practice a skill", self._menu_practice),
+            ("Cook food", self._menu_cook),
             ("Craft an amulet", self._menu_craft),
             ("Compose a glow-up (glamour)", self.glamour),
             ("Persuade a stranger", self._menu_persuade),
-            ("Your skills", self.show_skills),
-            ("Character sheet", self.status),
+        ]
+        if pc.contacts:
+            opts.insert(2, ("Look someone up (what you know about them)",
+                            self._menu_profile))
+        opts += [
+            ("The words you have (trade vocabulary)", self.words),
+            ("The festival calendar", self.calendar),
             ("Map of the region", self.show_map),
-            ("Great works (fund something enormous)", self.great_works),
+            ("Character sheet (everything about you)", self.status),
             ("The ways in and out (closures, roads, the moat)", self.roadworks),
+            ("Great works (fund something enormous)", self.great_works),
             ("Live small for a few days (be nobody in particular)",
              self.live_small),
             ("Save / load", self._menu_save),
-            ("Help (and typed commands)", self.help),
         ]
         act = self._choose(opts, "More \u2014 press a number")
         if callable(act):
@@ -2231,58 +2299,40 @@ class Game:
 
     # --- loop -------------------------------------------------------------
     def help(self) -> None:
-        _p("You can play two ways:")
-        _p("  \u2022 EASY: just press the number next to what you want to do.")
-        _p("  \u2022 TYPED: or type a command word. Both work at every prompt.")
+        _p("== How to play ==")
         _p("")
-        _p("Commands:")
-        for line in [
-            "look / l            describe where you are",
-            "go <n|name>         travel (may hit a moat gate)",
-            "map                 overview of the city",
-            "market              show the local market",
-            "buy <name> [n]      buy goods",
-            "sell <name> [n]     sell goods",
-            "inv / i             what you're carrying",
-            "appraise <name>     read & value an item (needs aksorn)",
-            "travel [place mode] intercity: scooter / bus / train",
-            "invest train <baht> fund the Chiang Rai railway",
-            "",
-            "skills              your learned crafts",
-            "practice <skill>    grind a skill (teachers unlock deep ranks)",
-            "learn/study <skill> practice, at a monastery or teacher",
-            "cook [dish]         cook pad_krapow / sai_ua / khao_soi (offerings)",
-            "commune             speak to the phii at a shrine",
-            "craft <hun|takrut>  occult craft (needs saiyasat + reading)",
-            "glamour             the glow-up: social invisibility",
-            "bite / eat          grab cheap street food (+health, -stress)",
-            "feast <chili|bug|offal>  a food dare to win face (costs health)",
-            "pharmacy            chemist's: remedies + quiet potion trade",
-            "clinic              buy attraction/poise (glamour), not health",
-            "hospital            real healing, real money",
-            "courier / riders    (Aof's trust) run a hot load past your next gate",
-            "lottery / huay      buy a ticket if a seller's working the lane",
-            "dress               wear the day's lucky colour (court luck, 1/day)",
-            "sadao / shed        shed the day's bad luck at a shrine (needs offering)",
-            "",
-            "network / web       your contacts, bonds, and open doors",
-            "profile <name>      what you know of someone — where, wants, tastes",
-            "calendar            the festival year, and what's coming",
-            "celebrate           join a festival on here today (deepens bonds)",
-            "journal / tale      the mystery so far, and days to the festival",
-            "talk <name>         deepen a bond with someone here",
-            "give <item> to <name>  a gift; meeting their want means more",
-            "ask <name>          follow an introduction, or share what you know",
-            "bargain             a pivotal charm/negotiation, when one awaits",
-            "persuade <who>      a stranger: human/police/customs/monk/phii/...",
-            "rumors              listen for a lead",
-            "rest                lie low: -stress, -heat, +6h",
-            "sleep               end the day; wake at dawn, restored",
-            "status / stat       your character sheet",
-            "save / load         one save slot",
-            "help / quit",
-        ]:
-            print("  " + line)
+        _p("NUMBERS are what this place, at this hour, is offering. They change "
+           "as you move and as the day turns — that is the game, not a fault.")
+        _p("")
+        _p("LETTERS never change. [M] is money on every screen in the game, "
+           "forever. Learn the letters once and you never read the list again.")
+        _p("")
+        _p("  [B] Bag      what you're carrying, and what a scanner would see")
+        _p("  [M] Money    your pocket, your pile, and the rail it sits on")
+        _p("  [P] People   everyone you know, and how well")
+        _p("  [K] Skills   what you can do, and how to get better at it")
+        _p("  [N] News     what the street is saying")
+        _p("  [J] Journal  the tale so far")
+        _p("  [E] Eat      cheap food; costs a little, mends a little")
+        _p("  [W] Wait     stand about and let an hour pass")
+        _p("  [R] Rest     six quiet hours")
+        _p("  [S] Sleep    end the day, wake at dawn")
+        _p("  [X] More     everything else — craft, cook, map, save, roads")
+        _p("  [?] Help     this")
+        _p("")
+        _p("TWO THINGS WORTH KNOWING:")
+        _p("")
+        _p("  Money is in two places. What's in your POCKET is what shops and "
+           "bribes actually take. What's on your RAIL is the pile. Moving "
+           "between them takes time and can be noticed. Press [M].")
+        _p("")
+        _p("  Time is the real budget, not baht. Every visit and every journey "
+           "spends hours, doors keep their own hours, and a shut door at the "
+           "wrong hour is not a bug.")
+        _p("")
+        _p("You can also just type a word at any prompt \u2014 'go warorot', "
+           "'buy takrut', 'appraise somdej', 'status'. Numbers and letters are "
+           "faster; typing is there when you want it.")
 
     def step(self, raw: str) -> None:
         raw = raw.strip()
@@ -2418,25 +2468,25 @@ class Game:
         pc = self.pc
         print()
         print("=" * WRAP)
-        purse = f"{pc.baht:,}฿"
+        purse = f"pocket {_money(pc.baht)}"
         if pc.reserve or pc.rail_grind:
-            tag = ("cold" if pc.rail_grind else
-                   "frozen" if pc.rail_frozen else rails.RAILS[pc.rail].key)
-            purse += f"  (+{pc.reserve:,}฿ {tag})"
-        print(f"  {_clock(pc)}   \u00b7   {DISTRICTS[pc.location].name}"
-              f"   \u00b7   {purse}")
+            tag = ("COLD" if pc.rail_grind else
+                   "FROZEN" if pc.rail_frozen else rails.RAILS[pc.rail].key)
+            purse += f"   \u00b7   {tag} {_money(pc.reserve)}"
+        print(f"  {_clock(pc)}   \u00b7   {DISTRICTS[pc.location].name}")
+        print(f"  {purse}")
         cond = f"  Heat {pc.heat}/10   Stress {pc.stress}/9"
         if pc.health < 10:
             cond += f"   Health {pc.health}/10"
         carried = pc.carried_heat()
         if carried:
-            cond += f"   \u2022 carrying customs-heat {carried}"
+            cond += f"   \u2022 {carried} in your bag would flag a gate scanner"
         print(cond)
-        print("-" * WRAP)
         obj = noticing.objective(pc)
         if obj is None and story.started(pc):
             obj = story.objective(pc)      # the pillar arc, once it's yours
         if obj:
+            print("-" * WRAP)
             for line in textwrap.wrap("\u2192 " + obj, WRAP - 2):
                 print("  " + line)
         print("=" * WRAP)
@@ -2452,6 +2502,7 @@ class Game:
         self.look()
         while self.running:
             sections = self._menu_sections()
+            fixed = self._fixed_keys()
             self._banner()
             flat: list[object] = []
             for title, items in sections:
@@ -2462,8 +2513,23 @@ class Game:
                 for label, action in items:
                     flat.append(action)
                     print(f"  {len(flat):>2}.  {label}")
-            print("   0.  Quit")
-            raw = self._ask("Press a number  (or type a command word)")
+            if not flat:
+                print("  \u2014 Nothing here right now \u2014")
+            # The fixed bar. Same keys, same order, every screen, forever.
+            print()
+            row, width = [], 0
+            for key, label, _a in fixed:
+                cell = f"[{key}] {label}"
+                if width + len(cell) + 3 > WRAP - 2:
+                    print("  " + "   ".join(row))
+                    row, width = [], 0
+                row.append(cell)
+                width += len(cell) + 3
+            if row:
+                print("  " + "   ".join(row))
+            print("  [0] Quit")
+
+            raw = self._ask("Press a number, or a letter")
             if raw is None:
                 break
             raw = raw.strip()
@@ -2477,7 +2543,12 @@ class Game:
                 if 0 <= i < len(flat):
                     flat[i]()  # type: ignore[operator]
                 else:
-                    _p("That number isn't on the menu.")
+                    _p("That number isn't on the menu. The letters below it "
+                       "always work, whatever the numbers say.")
+                continue
+            hit = next((a for k, _l, a in fixed if k.lower() == raw.lower()), None)
+            if hit:
+                hit()
             else:
                 self.step(raw)
         _p("The scanners hum on without you. \u0e42\u0e0a\u0e04\u0e14\u0e35 "

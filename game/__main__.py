@@ -85,6 +85,33 @@ def _the_pile(pc: Character) -> None:
     pc.reserve = rails.PILE_BAHT
 
 
+def _orientation(pc: Character) -> None:
+    """Thirty seconds on how the screen works. Not what to do — how to act.
+
+    Deliberately says nothing about what is worth doing, because the opening
+    is meant to be found rather than issued. It explains the controls and the
+    two things that confuse everybody (money in two places, time as the real
+    budget), and then gets out of the way.
+    """
+    _p("")
+    _p("=" * 72)
+    _p("BEFORE YOU START \u2014 how the screen works")
+    _p("")
+    _p("  NUMBERS change. They are what this place, at this hour, is offering.")
+    _p("  LETTERS never change. [M] is money on every screen, forever.")
+    _p("")
+    _p("  Two things trip everyone up:")
+    _p("")
+    _p("  1. Your money is in two places. Your POCKET is what shops and bribes "
+       "take. Your RAIL is the pile. Move between them with [M].")
+    _p("")
+    _p("  2. Time is the budget, not baht. Everything you do spends hours, and "
+       "people and doors keep their own hours. A shut door is information.")
+    _p("")
+    _p("  Press [?] at any point for this again.")
+    _p("=" * 72)
+
+
 def main() -> None:
     print(TITLE)
     if save.has_save():
@@ -93,6 +120,7 @@ def main() -> None:
             Game(pc, rng=random.Random()).run()
             return
     pc = new_character()
+    _orientation(pc)
     _p("")
     _p(f"Welcome, {pc.name}. You start in the old city with {pc.baht:,}฿ in "
        f"your pocket, {pc.reserve:,}฿ on the "
