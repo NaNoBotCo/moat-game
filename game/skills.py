@@ -76,6 +76,8 @@ def can_practice(pc, skill: str, features: tuple[str, ...]) -> tuple[bool, str]:
 def gain_xp(pc, skill: str, amount: int) -> int | None:
     """Add xp; return the new rank if it went up, else None."""
     before = pc.skill(skill)
+    from . import opening
+    amount += opening.practice_bonus(pc)
     pc.xp[skill] = pc.xp.get(skill, 0) + amount
     after = rank_for_xp(pc.xp[skill])
     if after > before:

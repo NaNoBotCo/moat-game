@@ -136,6 +136,23 @@ day, and you either carry the broken piece back to the pillar before then (the
 city keeps its shade) or you don't (a generation in the sun). Type **`journal`**
 for the tale so far and the days remaining.
 
+### The first days — things that go right
+
+A player who is only ever refused puts the game down before the good part, and
+a shut door only reads as intriguing when something else is going well. So the
+first six days carry a short chain of small, guaranteed wins (`game/opening.py`)
+— each pays a little, teaches exactly one verb, and cannot fail. Eat the rice
+soup the woman downstairs insists on. Run a parcel four streets for 350฿.
+Ask the man who takes it what the trade calls the thing you are carrying, and
+get your first word free. Work out what your own bag is worth. Skills also move
+faster while you are new, so a first practice visibly moves.
+
+None of them is a quest and none has a marker. They are the seed, though: she
+tells you Kad Luang is open **now**, and it is, and you go, and it works. The
+beat is only ever offered while that is literally true. Nobody says the word
+"hours". Days later, when four doors in a row have been shut in your face, that
+morning is the thing you remember.
+
 ### The opening — nobody tells you there is a puzzle
 
 There is no quest-log entry for the first thing you do, and no marker. You
@@ -384,6 +401,7 @@ game/
   persuasion.py  audience-based negotiation resolver
   clock.py       the day's parts (morning/afternoon/evening/night) & sleep
   coucal.py      THE clock — eight watches a day; everything subscribes to it
+  opening.py     the first days' small guaranteed wins, then it gets out of the way
   curse.py       Suan Prung's price, and the Silver Temple that undoes it
   roads.py       closures, roads you can pay for, and the moat you can fill in
   contribute.py  hours observed in the real city, for Mot Dang's atlas

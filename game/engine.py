@@ -6,8 +6,8 @@ import random
 import textwrap
 
 from . import (checkpoint, clock, coucal, curse, dictionary, festivals, lottery,
-               luck, market, noticing, persuasion, rails, relationships, roads,
-               save, skills, story, venues, wealth, works)
+               luck, market, noticing, opening, persuasion, rails, relationships,
+               roads, save, skills, story, venues, wealth, works)
 from .character import ATTR_BLURB, ATTRS, BACKGROUNDS, Character
 from .dice import Outcome, roll
 from .items import OFFERINGS, get
@@ -1061,6 +1061,12 @@ class Game:
                 _p(line)
             if done:
                 self.advance(30 * 24 * 60)
+
+    def _make_beat(self, beat):
+        def run() -> None:
+            for line in beat.run(self):
+                _p(line)
+        return run
 
     def rest(self) -> None:
         pc = self.pc
@@ -2214,6 +2220,11 @@ class Game:
 
         # -- Here & now: what this place and hour actually offer --------------
         here_now: list[tuple[str, object]] = []
+        # The first days come first. They are small, they pay, and they cannot
+        # fail — a player being refused everywhere else needs something that
+        # works, or they put the game down before the good part.
+        for beat in opening.available(pc):
+            here_now.append((beat.label, self._make_beat(beat)))
         t = story.available_trial(pc)
         if t:
             here_now.append((f"\u2605 {t.title} \u2014 the pivotal negotiation",

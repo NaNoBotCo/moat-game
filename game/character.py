@@ -90,6 +90,7 @@ class Character:
     roads: dict = field(default_factory=dict)               # stretches you've sealed: see roads.py
     moat: dict = field(default_factory=dict)                # whether the ring is dry. see roads.py
     observations: list = field(default_factory=list)        # hours seen, for the atlas: contribute.py
+    opening: dict = field(default_factory=dict)             # first-days beats already had
     # --- the pile and its rail -------------------------------------------
     # `baht` above is the pocket — what shops and bribes actually take.
     # `reserve` is the pile, wherever you've bound it. See rails.py.
@@ -173,7 +174,7 @@ class Character:
             "noticing": self.noticing, "perceived": self.perceived,
             "works": self.works, "cursed": self.cursed,
             "roads": self.roads, "moat": self.moat,
-            "observations": self.observations,
+            "observations": self.observations, "opening": self.opening,
             "difficulty": self.difficulty, "rail": self.rail,
             "reserve": self.reserve, "rail_grind": self.rail_grind,
             "rail_frozen": self.rail_frozen,
