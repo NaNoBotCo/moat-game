@@ -138,6 +138,17 @@ def true_window(seed_key: str) -> tuple[int, int]:
     return o, (o + length) % DAY
 
 
+def span(seed_key: str, watches: int = 3) -> tuple[int, int]:
+    """A window several watches wide, keyed to the bird. Used for the places
+    that keep long hours — a market floor is open most of a working day, but
+    it still opens and shuts on the watch and not on your wristwatch."""
+    h = 0
+    for ch in seed_key:
+        h = (h * 31 + ord(ch)) & 0xFFFFFFFF
+    o = watch_start(h % WATCHES)
+    return o, (o + watches * WATCH_MINUTES) % DAY
+
+
 def open_at(window: tuple[int, int], minutes: int) -> bool:
     o, c = window
     m = minutes % DAY

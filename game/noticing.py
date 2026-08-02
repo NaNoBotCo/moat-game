@@ -51,10 +51,15 @@ QUARTER_KEYS = tuple(QUARTERS)
 # Walking between quarters, inside the wall, on foot.
 WALK_MINUTES = 25
 
-# What it takes before the player has demonstrably noticed.
-NEED_OBSERVATIONS = 3
-NEED_WAITED = 1
-NEED_CROSSREF = 1
+# What it takes before the player has demonstrably noticed. The refusals are
+# the important one: the city has to have actually said no to you, repeatedly,
+# before "I have noticed something" means anything. Without them a player can
+# stumble into the realisation on the first afternoon, having never once been
+# inconvenienced, and the line lands on nothing.
+NEED_REFUSALS = 3
+NEED_OBSERVATIONS = 6
+NEED_WAITED = 2
+NEED_CROSSREF = 2
 # Quarters you must hear the call from before the candidates collapse.
 NEED_BEARINGS = 3
 
@@ -86,6 +91,7 @@ def init(pc, seed: int = 1296) -> None:
         "quarter": rng.choice(QUARTER_KEYS),   # which quarter the wat stands in
         "here": "centre",                      # where the player is inside the wall
         "observations": [],                    # civil minutes of window-flips seen
+        "refusals": 0,                         # shut doors you walked into
         "waited": 0,                           # deliberate wait-outs
         "crossref": [],                        # districts compared in one day
         "crossrefs": 0,
@@ -95,22 +101,30 @@ def init(pc, seed: int = 1296) -> None:
 
 
 # --- the refusal (phase 1: the player does not know there is a puzzle) ------
+# None of these may assert what time of day it is — the game will show the
+# clock two lines below, and a line that says "the middle of the afternoon" at
+# 08:40 destroys the effect it was written for. Where the hour matters, it is
+# read from the clock and quoted back.
 DEFLECTIONS = (
-    "“Ah — not now, na. You come back the right time.” He does "
-    "not say what the right time is. It does not seem to occur to him that you "
-    "would not know.",
+    "“Ah — not now, na. You come back the right time.” He does not say what "
+    "the right time is. It does not seem to occur to him that you would not "
+    "know.",
     "The shutter is down. A hand-lettered card behind the grille gives hours, "
     "and the hours are not round numbers.",
-    "“Too early.” You point out that it is the middle of the "
-    "afternoon. She agrees that it is the middle of the afternoon, and repeats "
-    "that it is too early.",
     "Somebody is already waiting, sitting on the step with the patience of a "
     "person who knows exactly how long this is going to take.",
     "“My uncle open. Not me. He come after the bird.”",
+    "A boy is stacking crates against the door in no particular hurry, which "
+    "tells you it will be a while, and tells you nothing about how long.",
 )
 
 
-def deflection(rng: random.Random) -> str:
+def deflection(rng: random.Random, minutes: int | None = None) -> str:
+    """A shut door, and no explanation you can use."""
+    if minutes is not None and rng.random() < 0.3:
+        return (f"“Too early.” You point out that it is {coucal.hhmm(minutes)}. "
+                f"She agrees that it is {coucal.hhmm(minutes)}, and repeats "
+                f"that it is too early.")
     return rng.choice(DEFLECTIONS)
 
 
@@ -127,6 +141,12 @@ def note_wait(pc, ended_at: int) -> None:
     """The player deliberately waited, and the wait ended on a hinge."""
     if coucal.on_boundary(ended_at, slack=12):
         state(pc)["waited"] = state(pc).get("waited", 0) + 1
+
+
+def note_refusal(pc) -> None:
+    """A shut door, at an hour you had no reason to think was wrong."""
+    st = state(pc)
+    st["refusals"] = st.get("refusals", 0) + 1
 
 
 def note_crossref(pc, district: str) -> None:
@@ -151,7 +171,8 @@ def check_noticed(pc) -> list[str]:
     if phase(pc) != PHASE_BLIND:
         return []
     st = state(pc)
-    if (_aligned(st.get("observations", [])) < NEED_OBSERVATIONS
+    if (st.get("refusals", 0) < NEED_REFUSALS
+            or _aligned(st.get("observations", [])) < NEED_OBSERVATIONS
             or st.get("waited", 0) < NEED_WAITED
             or st.get("crossrefs", 0) < NEED_CROSSREF):
         return []
@@ -184,6 +205,12 @@ def hear_call(pc, minutes: int) -> list[str]:
                 "along the lane a shutter goes up."]
     if phase(pc) == PHASE_FOUND:
         return [f"The bird sounds — {coucal.watch_name(minutes)} turning over."]
+    # A bearing means standing inside the wall and watching THAT quarter answer.
+    # From outside the moat you can hear the bird perfectly well and learn
+    # nothing from it, which is the difference between hearing and listening.
+    if pc.location != "old_city":
+        return ["Somewhere behind the wall the bird calls, thinned by distance. "
+                "Out here nothing much answers it."]
     return _take_bearing(pc, minutes)
 
 

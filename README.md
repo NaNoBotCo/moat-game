@@ -150,9 +150,16 @@ stopped. It keeps **eight watches to the day, beginning 37 minutes after civil
 midnight**, and every window, shift, round and rotation in the city hangs off
 it. No entity keeps private time; everything asks this module.
 
-The quest begins only when you **demonstrate that you have noticed** — by
-waiting out a window on purpose, and by comparing two lanes' hours instead of
-one. Then finding the clock is triangulation, not navigation: the bird sounds
+Market floors keep the bird's hours, not yours — Kad Luang runs 06:37–15:37,
+the Night Bazaar 12:37–21:37, Wualai 21:37–06:37 — so you spend the first days
+walking into shut doors and being told, without explanation, to come back at the
+right time. Nobody will tell you when that is.
+
+The quest begins only when you **demonstrate that you have noticed**: three
+shut doors is the floor, plus waiting one out on purpose (twice) and comparing
+two different lanes' hours (twice). Waiting *an hour* will never do it — a fixed
+step from a fixed start visits the same three points of the watch forever. You
+have to wait for *something*. Then finding the clock is triangulation, not navigation: the bird sounds
 three times a day, **49 wats inside the wall** are candidates (taken from the
 real city, via Mot Dang), and you stand in a quarter and watch how tightly the
 local shutters answer the call. Three quarters collapses the search to one.

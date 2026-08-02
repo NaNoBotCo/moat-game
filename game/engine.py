@@ -249,6 +249,7 @@ class Game:
             return
         now = venues.open_now(pc.location, pc.minutes)
         anchors = venues.anchors(pc.location)
+        noticing.note_crossref(pc, pc.location)
         _p(f"== Around you — {DISTRICTS[pc.location].name} ==")
         print(f"  {len(here):,} shopfronts. {len(now):,} of them open at "
               f"{clock.hhmm(pc.minutes)}.")
@@ -500,6 +501,8 @@ class Game:
             _p("At a gate: " + note.hidden_note)
 
     def show_market(self) -> None:
+        if self._shut_here():
+            return
         pc = self.pc
         prof = market.MARKET_PROFILES.get(pc.location)
         if not prof:
@@ -847,10 +850,47 @@ class Game:
         self.advance(noticing.WALK_MINUTES)
 
     def wait_here(self) -> None:
-        """Stand about and let time pass. Sometimes that is the whole move."""
+        """Stand about and let time pass.
+
+        Waiting *an hour* is a fixed step, and a fixed step from a fixed start
+        visits the same three points of the watch forever — so it can never
+        land on the hinge of one, and a player doing exactly the right thing
+        would never be seen doing it. Waiting *for something* can land, which
+        is the whole difference between killing time and reading a window.
+        """
         pc = self.pc
-        _p("You find a step, and wait.")
-        self.advance(60)
+        opts: list[tuple[str, object]] = [("Wait an hour", 60)]
+        shut = (pc.location in market.MARKET_PROFILES
+                and not market.market_open(pc.location, pc.minutes))
+        if shut:
+            opts.insert(0, ("Wait for it to open \u2014 however long that takes",
+                            "door"))
+        opts.append(("Wait until something changes", "change"))
+        pick = self._choose(opts, "Wait \u2014 press a number")
+        if pick is None:
+            return
+
+        if pick == "door":
+            o, _c = market.market_window(pc.location)
+            gap = (o - pc.minutes) % (24 * 60)
+            _p("You find a step across the lane, and settle on it, and watch "
+               "the shutter instead of your phone.")
+            self.advance(gap)
+            _p("")
+            _p("It goes up. Not at any hour you would have guessed, and not at "
+               "an hour that is written anywhere — but the people already "
+               "queueing did not have to guess.")
+        elif pick == "change":
+            gap = coucal.to_next_boundary(pc.minutes) or coucal.WATCH_MINUTES
+            _p("You find a step, and wait, and give it as long as it takes.")
+            self.advance(gap)
+            _p("Along the lane, more or less together, things change over: a "
+               "shutter, a shift, a man who has been standing there since you "
+               "arrived deciding he is finished.")
+        else:
+            _p("You find a step, and wait.")
+            self.advance(60)
+
         noticing.note_wait(pc, pc.minutes)
         if noticing.can_search(pc):
             _p("You are in the right quarter. Go and look for it.")
@@ -1995,7 +2035,27 @@ class Game:
         if dest is not None:
             self.go(str(dest))
 
+    def _shut_here(self) -> bool:
+        """The city declining to explain itself. This is the opening, in one
+        line, repeated until the player works out what it is a line about."""
+        pc = self.pc
+        # Nowhere that has no market at all is "shut" — that path belongs to
+        # the ordinary "no stalls keep a floor here" message, not to this.
+        if pc.location not in market.MARKET_PROFILES:
+            return False
+        if market.market_open(pc.location, pc.minutes):
+            return False
+        noticing.note_refusal(pc)
+        _p(noticing.deflection(self.rng, pc.minutes))
+        if noticing.lattice_visible(pc):
+            o, c = market.market_window(pc.location)
+            _p(f"({clock.hhmm(o)}\u2013{clock.hhmm(c)}. You know that now.)")
+        self.advance(10)
+        return True
+
     def _menu_market(self) -> None:
+        if self._shut_here():
+            return
         pc = self.pc
         if not market.MARKET_PROFILES.get(pc.location):
             _p("No market floor here. Try Warorot, the Night Bazaar, Doi Suthep, "
@@ -2173,7 +2233,18 @@ class Game:
                              self._menu_people))
         prof = market.MARKET_PROFILES.get(pc.location)
         if prof:
-            here_now.append((f"Browse {prof['name']} (buy / sell)", self._menu_market))
+            shut = not market.market_open(pc.location, pc.minutes)
+            label = f"Browse {prof['name']} (buy / sell)"
+            if shut:
+                # Before you can read the lattice you are not told the hours —
+                # you are only told no. Afterwards the window is simply there.
+                label = (f"{prof['name']} — shut"
+                         + (f" (opens {clock.hhmm(market.market_window(pc.location)[0])})"
+                            if noticing.lattice_visible(pc) else ""))
+            elif noticing.lattice_visible(pc):
+                o, c = market.market_window(pc.location)
+                label += f"   [{clock.hhmm(o)}–{clock.hhmm(c)}]"
+            here_now.append((label, self._menu_market))
         if "shrine" in feats:
             here_now.append(("Commune with the spirits at the shrine", self.commune))
             if pc.luck < 1:
@@ -2181,6 +2252,13 @@ class Game:
                                  "needs an offering)", self.sadao))
         if ("market" in feats or "night" in feats) and crowd:
             here_now.append(("Take on a food dare to win face", self._menu_feast))
+        # Reading a lane's hours is an ordinary, useful thing to do, and it is
+        # also the act the opening quietly wants — so it belongs on the front
+        # screen where a curious player will find it, not two levels down in
+        # More. It is not a marker: it says nothing about there being a puzzle.
+        if venues.in_district(pc.location):
+            here_now.append(("Look along the lane (who's open, who isn't)",
+                             self.around))
         if "silver_temple" in feats:
             label = "The Silver Temple"
             if curse.marks(pc):
@@ -2272,7 +2350,6 @@ class Game:
         # a fixed key ([K] skills, [?] help) is deliberately not repeated here.
         opts: list[tuple[str, object]] = [
             ("Look around (describe this place again)", self.look),
-            ("The shopfronts on this lane (and what's open)", self.around),
             ("Practice a skill", self._menu_practice),
             ("Cook food", self._menu_cook),
             ("Craft an amulet", self._menu_craft),

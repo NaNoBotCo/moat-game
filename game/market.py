@@ -162,6 +162,24 @@ def _flux(day: int, district: str, item: Item) -> float:
     return base
 
 
+# Market floors open and shut on the watch. Which watch is deterministic per
+# floor, so the city's hours are stable forever and learnable — that is the
+# whole point of them. See game/coucal.py.
+MARKET_WATCHES = 3          # nine hours: a working day, on the bird's clock
+
+
+def market_window(district: str) -> tuple[int, int]:
+    from . import coucal
+    return coucal.span(f"market:{district}", MARKET_WATCHES)
+
+
+def market_open(district: str, minutes: int) -> bool:
+    from . import coucal
+    if district not in MARKET_PROFILES:
+        return False
+    return coucal.open_at(market_window(district), minutes)
+
+
 def price_mods(pc, district: str) -> tuple[int, float]:
     """How *who you are* bends this floor's prices right now.
 
