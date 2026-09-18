@@ -551,3 +551,13 @@ are in place (moat, skills, literacy, persuasion, crafting, Lanna travel, the
 railway project) and the content — more NPCs, contracts, encounters, devas, and
 cities — is data to grow from here. The **web** game has its first arcade subgame
 (traffic crossing); the CLI world is the model it grows from.
+
+
+## Licence
+
+Records, prose and pages: CC BY-SA 4.0. Code: AGPL-3.0-or-later. Anything
+carried in from elsewhere keeps its own terms — see [LICENSE](LICENSE).
+
+**Commercial licence.** If share-alike doesn't fit your use — a corpus, a
+product, a model — a commercial licence is available.
+[Open an issue](https://github.com/NaNoBotCo/moat-game/issues) and say what you need.
