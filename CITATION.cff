@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this work, cite it as below."
+title: "Moat Game"
+abstract: "A text game about an amulet smuggler crossing Chiang Mai checkpoints in 2076"
+type: software
+authors:
+  - name: "NaN"
+    website: "https://github.com/NaNoBotCo"
+repository-code: "https://github.com/NaNoBotCo/moat-game"
+url: "https://nanobotco.github.io/moat-game/"
+license:
+  - CC-BY-SA-4.0
+  - AGPL-3.0-or-later
+date-released: "2026-09-18"
