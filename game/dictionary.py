@@ -92,7 +92,7 @@ def fluency_note(pc) -> str:
         2: "You can hold a stall conversation without giving yourself away.",
         3: "Dealers start quoting you the second price, not the first.",
         4: "You are taken for someone's student, and treated accordingly.",
-        5: "You are spoken to as a peer, which is its own kind of danger.",
+        5: "You are spoken to as a peer, which is its own kind of danger.",  # stylecheck: allow — game fiction
     }[f]
 
 

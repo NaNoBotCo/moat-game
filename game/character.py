@@ -138,7 +138,7 @@ class Character:
         return key in self.worn
 
     def carried_heat(self) -> int:
-        """Total customs risk currently on your person."""
+        """Total customs heat currently on your person."""
         from .items import get
         return sum(get(k).heat * n for k, n in self.inventory.items())
 

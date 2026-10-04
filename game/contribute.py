@@ -108,7 +108,7 @@ def infer(records: list[dict]) -> Window:
     shuts = [r["minute"] for r in records if not r["open"]]
     w = Window(pid, observations=len(records))
     if not opens:
-        w.notes.append("Never seen open. Not enough to say anything.")
+        w.notes.append("Never seen open. Not enough to say anything.")  # stylecheck: allow — an observation count, not advice
         return w
     lo, hi = min(opens), max(opens)
     # Shut sightings *inside* the proposed span are the contradiction that matters.

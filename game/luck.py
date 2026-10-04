@@ -82,12 +82,12 @@ OMENS: list[Omen] = [
          "Your right eyelid flutters and will not settle.",
          "The taxi uncle grins \u2014 right eye, good news coming, wait and see.",
          "Your aunt disagrees flatly: for a woman it runs the other way, and "
-         "today that's a warning.",
+         "today that's a warning.",  # stylecheck: allow — a character's folk belief
          "your right eye won't settle"),
     Omen("itchy_right_palm",
          "Your right palm itches maddeningly over breakfast.",
          "Money coming IN, says the whole market \u2014 the right hand receives.",
-         "Only if you don't scratch it, warns the noodle man \u2014 scratch, and "
+         "Only if you don't scratch it, warns the noodle man \u2014 scratch, and "  # stylecheck: allow — a character's folk belief
          "you scratch the luck clean away.",
          "your right palm still itches"),
     Omen("itchy_left_palm",
@@ -101,7 +101,7 @@ OMENS: list[Omen] = [
          "Three calls: the spirits say the way is open, go, the monk taught you.",
          "A gecko calling as you leave is the house telling you to wait, says "
          "your landlady, and she means it.",
-         "the wall-gecko's warning still nags"),
+         "the wall-gecko's warning still nags"),  # stylecheck: allow — game fiction
     Omen("gecko_fall",
          "A fat tukkae drops from the eaves and lands square on your shoulder.",
          "Where it lands tells all \u2014 the shoulder means a burden about to "
@@ -144,7 +144,7 @@ OMENS: list[Omen] = [
     Omen("money_spider",
          "A tiny spider is walking up your sleeve when you glance down.",
          "Little spider, little fortune climbing to you \u2014 don't brush it off!",
-         "Brush it DOWN and the luck goes with it, warns the boy \u2014 and you "
+         "Brush it DOWN and the luck goes with it, warns the boy \u2014 and you "  # stylecheck: allow — a character's folk belief
          "already moved, didn't you.",
          "you keep checking your sleeve for the spider"),
     Omen("black_dog",

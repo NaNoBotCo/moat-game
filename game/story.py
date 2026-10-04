@@ -101,12 +101,12 @@ BEATS: list[Beat] = [
          "Chedi Luang. Every year at the Inthakhin festival the city renews a "
          "promise to it and keeps that protection. This year the guardian has gone "
          "silent and the protection is failing. Your first job is simple: find out "
-         "why. Ask the people who'd notice first — a gate officer, a lantern-maker, "
+         "why. Ask the people who'd notice first — a gate officer, a lantern-maker, "  # stylecheck: allow — quest text
          "the grandmother at your family shrine.",
          when=lambda pc: True),
     Beat("the_silence", 1, "Confirmed: the guardian has gone silent",
          "Two people tell you the same thing. Since the floods, the guardian in "
-         "the city pillar has stopped answering — no blessings, no warnings, "
+         "the city pillar has stopped answering — no blessings, no warnings, "  # stylecheck: allow — game fiction
          "nothing. That guardian is what keeps Chiang Mai safe, and its protection "
          "is fading fast. Something made it go quiet on purpose. Next question: "
          "what changed after the floods? Look to what the water dug up.",
@@ -127,7 +127,7 @@ BEATS: list[Beat] = [
          "Now it fits. The promise that binds the guardian to the city was never "
          "just words — it was carved into a sacred stone. That stone has been "
          "broken and a piece of it carried off. No stone, no promise; no promise, "
-         "no protection. That missing piece is what you need to recover.",
+         "no protection. That missing piece is what you need to recover.",  # stylecheck: allow — quest text
          when=lambda pc: _heard(pc, "mae_kaew") and _heard(pc, "marisa")),
     Beat("name_the_hand", 2, "Someone powerful is behind it",
          "The trail points upward. Pa Lawan's hush-money and Sgt. Anong's "
@@ -278,7 +278,7 @@ def _bargain_strong(pc):
             "price he cannot refuse that costs you nothing but nerve. The broken "
             "piece is in your hands, and not one baht left your purse.",
             f"(You carry the {_relic_name()} — the piece the pillar is "
-            "missing. Bring it home before the flowers.)"]
+            "missing. Bring it home before the flowers.)"]  # stylecheck: allow — quest text
 
 
 def _bargain_weak(pc):
@@ -316,7 +316,7 @@ TRIALS: list[Trial] = [
     Trial("the_bargain", 4, "The Bargain at Sop Ruak", "human", 5,
           "hard negotiation (Charcha)",
           "At the edge of the Triangle you face the fence who holds the broken "
-          "piece, half-sold already. There is no taking it by force. You must "
+          "piece, half-sold already. There is no taking it by force. You must "  # stylecheck: allow — quest text
           "out-bargain a professional on his own ground — the steepest negotiation "
           "in the game, and the most important.",
           _bargain_available, _bargain_leverage,
@@ -534,7 +534,7 @@ def street_lead(pc) -> str | None:
                     "the Shan maker, Sai Seng, has stopped smiling. He'd know what "
                     "changed.")
         return ("Officer Prasit at the south gate lights extra incense on his shift "
-                "now. Ask him what his scanners keep flaring at.")
+                "now. Ask him what his scanners keep flaring at.")  # stylecheck: allow — quest hint
     if a == 2:
         if not _heard(pc, "marisa"):
             return ("A scholar at the university is quietly logging every relic "
@@ -637,7 +637,7 @@ def journal(pc) -> list[str]:
 def _next_hint(pc, s: dict) -> str | None:
     act_n = s["act"]
     if act_n == 1:
-        return ("Ask who'd notice the silence first — talk to Sai Seng the "
+        return ("Ask who'd notice the silence first — talk to Sai Seng the "  # stylecheck: allow — quest hint
                 "lantern-maker in Wualai, Officer Prasit at the south gate, or "
                 "your grandmother at the old-city shrine.")
     if act_n == 2:
@@ -661,6 +661,6 @@ def _next_hint(pc, s: dict) -> str | None:
                     "opens only to one trusted by the ghost, the ancestor, and the "
                     "abbot alike.")
         if not _met(pc, "inthakhin"):
-            return (f"Bring the broken piece — the {_relic_name()} — and give it "
+            return (f"Bring the broken piece — the {_relic_name()} — and give it "  # stylecheck: allow — quest hint
                     "back to the Guardian before the flowers are laid.")
     return None

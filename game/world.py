@@ -151,7 +151,7 @@ DISTRICTS: dict[str, District] = {
         "ping_river", "Ping Riverside (Mae Ping)", "outside",
         "Wooden jetties, long-tail boats, and a line of sensor-buoys the city "
         "swears watches the water. Where the gates fail, the river runners succeed "
-        "— for a price and a risk. Since the rains the Ping runs low and gives "
+        "— for a price and a risk. Since the rains the Ping runs low and gives "  # stylecheck: allow — game fiction
         "things back: bricks, votive tablets, whole drowned lanes of Wiang Kum "
         "Kam surfacing in the shallows.",
         features=("docks", "smuggle_route"),
