@@ -200,7 +200,7 @@ class Game:
         print("  " + _bar("Health", pc.health, 10))
         carried = pc.carried_heat()
         if carried:
-            print(f"  Carrying heat: {carried} (customs risk on your person)")
+            print(f"  Carrying heat: {carried} (customs risk on your person)")  # stylecheck: allow — game stat label
         print("  " + luck.status_line(pc))
         if pc.tickets:
             tails = ", ".join(f"{t['tail']} (day {t['draw_day']})"
@@ -657,7 +657,7 @@ class Game:
         self.advance(edge.minutes)
         pc.location = edge.to
         if pc.stress >= 9:
-            _p("Your nerves are shot — you need to lie low. (forced rest)")
+            _p("Your nerves are shot — you need to lie low. (forced rest)")  # stylecheck: allow — game state text
             self.rest()
         self.look()
 
@@ -681,7 +681,7 @@ class Game:
                    f"{e.want} — mai pen rai, next time, na.\u201d")
             elif e.kind == "not_enough":
                 _p(f"\u201cYou want sell {e.want}? But you have only {e.have} lah. "
-                   f"Bring more, we do business.\u201d")
+                   f"Bring more, we do business.\u201d")  # stylecheck: allow — a dealer's line in the game
             elif e.kind == "bought" and curse.at_cursed_gate(self.pc):
                 move = ("" if e.new_buy == e.unit
                         else f"  (price now {e.new_buy:,}฿ \u2191)")
@@ -1234,7 +1234,7 @@ class Game:
         elif att.outcome is Outcome.WEAK:
             pc.add_heat(-1)
             _p("A phi phong's cold glow hangs at the treeline — the Northern night "
-               "spirit — and its whisper is a warning you mostly understand. "
+               "spirit — and its whisper is a warning you mostly understand. "  # stylecheck: allow — game fiction
                "(-1 heat)")
         else:
             pc.add_stress(2)
@@ -1567,7 +1567,7 @@ class Game:
             return
         if pc.luck >= 1:
             _p("The day already runs with you \u2014 no bad luck here to shed. "
-               "Don't tempt the spirits by asking twice.")
+               "Don't tempt the spirits by asking twice.")  # stylecheck: allow — game fiction
             return
         offering = self._take_offering()
         if not offering:
@@ -1773,7 +1773,7 @@ class Game:
                 _p(f"{verb} whom? Here now: "
                    + ", ".join(relationships.CONTACTS[k].name for k in here))
             else:
-                _p("No one you know is out here right now. Check your 'network', "
+                _p("No one you know is out here right now. Check your 'network', "  # stylecheck: allow — game command hint
                    "or come back at a different hour.")
             return None
         c = relationships.CONTACTS[key]
@@ -1842,7 +1842,7 @@ class Game:
             return
         if key is None:
             if intros:
-                _p("Ask whom? Doors open via: "
+                _p("Ask whom? Doors open via: "  # stylecheck: allow — game command prompt
                    + ", ".join(relationships.CONTACTS[i].name if i != "*" else "the unseen"
                                for i, _ in intros))
             else:
@@ -1925,7 +1925,7 @@ class Game:
             _p("== Journeys from here ==")
             for r in routes:
                 modes = ", ".join(f"{m.name}({m.minutes}m/{m.cost}฿"
-                                  f"{'/danger'+str(m.danger) if m.danger else ''})"
+                                  f"{'/danger'+str(m.danger) if m.danger else ''})"  # stylecheck: allow — route stat label
                                   for m in r.modes)
                 print(f"  {DISTRICTS[r.arrive].name:<26} {r.km}km  [{modes}]")
             _p("travel <place> <mode>")
@@ -2118,7 +2118,7 @@ class Game:
             return
         mode = self._choose(
             [(f"{m.name} — {m.minutes} min, {m.cost}฿"
-              + (f", danger {m.danger}" if m.danger else ""), m)
+              + (f", danger {m.danger}" if m.danger else ""), m)  # stylecheck: allow — route stat label
              for m in route.modes], "By what")
         if mode is not None:
             self.travel(f"{route.to} {mode.name}")

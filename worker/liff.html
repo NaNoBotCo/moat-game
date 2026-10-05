@@ -7,8 +7,7 @@
   rather see a list. Deliberately enormous tap targets and enormous type —
   this gets used one-handed, outdoors, in sun, by someone walking.
 
-  It asks the browser for a position, sends it to /nearby, and throws it away.
-  The position is never stored here and never stored there.
+  It asks the browser for a position and sends it to /nearby for one lookup.
 -->
 <style>
   :root{--bg:#faf7f2;--fg:#17130f;--mut:#6b5f54;--line:#ddd2c2;--card:#fff;
@@ -49,8 +48,7 @@
 
 <footer>
   Kept: which place, the minute, open or shut.<br>
-  Not kept: your location, your name, anywhere you've been.<br>
-  Never collected against: temples, hospitals, clinics, schools, homes.<br>
+  Excluded: temples, hospitals, clinics, schools, homes.<br>
   <a href="/privacy">The whole list</a>
 </footer>
 
@@ -70,7 +68,7 @@
     out.innerHTML = '<p class="sub">Asking your phone where it is…</p>'
     navigator.geolocation.getCurrentPosition(
       async pos => {
-        // Used once, sent once, never stored — here or at the other end.
+        // Sent to /nearby for this one lookup.
         const { latitude: lat, longitude: lng } = pos.coords
         const r = await fetch(`/nearby?lat=${lat.toFixed(5)}&lng=${lng.toFixed(5)}`)
         const { places = [] } = await r.json()

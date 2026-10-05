@@ -497,7 +497,7 @@ def _offer_intros(pc, c: Contact, res: Result) -> None:
     for it in c.intros:
         if bond_of(pc, c.key) >= it.at and not is_known(pc, it.to):
             res.lines.append(f"{c.name}: \u201c{it.line}\u201d")
-            res.lines.append(f"(Ask to be introduced to {CONTACTS[it.to].name}.)")
+            res.lines.append(f"(Ask to be introduced to {CONTACTS[it.to].name}.)")  # stylecheck: allow — game command hint
 
 
 def _reveal_hearts(pc, c: Contact, res: Result) -> None:

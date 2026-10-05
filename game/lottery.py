@@ -57,7 +57,7 @@ class Vendor:
 # children are auspicious, a spirit-tree reader sells numbers off the bark.
 VENDORS: list[Vendor] = [
     Vendor("blind", "a blind seller, tapping her board along the kerb", 2,
-           "The blind walk close to fortune, people say \u2014 buy from her hand "
+           "The blind walk close to fortune, people say \u2014 buy from her hand "  # stylecheck: allow — a folk saying in the game
            "and you buy a little of it."),
     Vendor("granny", "a tiny ancient grandmother, older than the moat, it seems", 2,
            "So old she's half in the other world already; her fingers on a "
@@ -151,7 +151,7 @@ def appear(pc, rng: random.Random | None = None) -> Encounter | None:
                       -1 if getattr(pc, "luck", 0) < 0 else 0)
     if welcome > 0:
         wnote = ("They've come at a good moment \u2014 the day feels open, and an "
-                 "open day is when you should say yes.")
+                 "open day is when you should say yes.")  # stylecheck: allow — game fiction
     elif welcome < 0:
         wnote = ("Something's off in the timing; they've caught you at a sour "
                  "hour, and a sour hour is a poor time to tempt fortune.")

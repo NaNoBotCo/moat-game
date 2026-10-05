@@ -71,7 +71,7 @@ UNIVERSAL_RAILS = [
     "none is attached here.",
     "No recognisable real people. Faces are invented.",
     "Chiang Mai, 2076 — fifty years on. Worn-in near-future over Lanna fabric: "
-    "solar shingles on old tin, sensor arches bolted to brick. Never gleaming, "
+    "solar shingles on old tin, sensor arches bolted to brick. Never gleaming, "  # stylecheck: allow — brief to an illustrator
     "never a clean slate.",
     "The animist layer is real in this world and is never winked at, ironised, "
     "or explained away. Draw it as fact, not as superstition.",
@@ -211,8 +211,8 @@ def build() -> list[dict]:
             "years of dull grey sheets nobody will melt down.",
         ],
         avoid=["This is the game's own temple and not a portrait of any real "
-               "one. Do not reproduce an actual temple's identifying features.",
-               "Do not make the dull panels look damaged or dirty. They are "
+               "one. Do not reproduce an actual temple's identifying features.",  # stylecheck: allow — brief to an illustrator
+               "Do not make the dull panels look damaged or dirty. They are "  # stylecheck: allow — brief to an illustrator
                "full, not spoiled."],
         slots=("silver", "dull", "lamp", "ink")))
 
@@ -261,7 +261,7 @@ def build() -> list[dict]:
             in_frame=[it.note,
                       "Actual size cues. These are small objects.",
                       "Honest wear. A genuine one has a history and it shows."],
-            avoid=["Do not invent a lineage or an inscription. If you need the "
+            avoid=["Do not invent a lineage or an inscription. If you need the "  # stylecheck: allow — brief to an illustrator
                    "real form of something, ask — we have a sourced reference "
                    "corpus and will get it right rather than guess.",
                    "No glow, no aura, no particle effects. Power here is not "
@@ -321,7 +321,7 @@ def build() -> list[dict]:
                       f"Set at {DISTRICTS[where].name}." if where in DISTRICTS
                       else "Set wherever this is properly kept.",
                       "A crowd the player is inside, not watching."],
-            avoid=["No tourist framing. Never sort this into authentic vs. "
+            avoid=["No tourist framing. Never sort this into authentic vs. "  # stylecheck: allow — brief to an illustrator
                    "for-visitors — it is simply what people do."],
             slots=("marigold", "lamp", "teak", "ink")))
 

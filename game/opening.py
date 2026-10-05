@@ -134,7 +134,7 @@ def _first_sale(g) -> list[str]:
         "",
         f"{name} is worth real money to the right buyer, and you know roughly "
         f"who that is. The pile is not the business. The pile is the thing that "
-        f"makes the business dangerous.",
+        f"makes the business dangerous.",  # stylecheck: allow — game fiction
         "",
         "(Sell at a floor that wants your sort of goods — the guild at Warorot "
         "pays fairly; the Night Bazaar pays more, later, for a story.)",
@@ -152,7 +152,7 @@ BEATS: tuple[Beat, ...] = (
          lambda pc: (pc.location == "old_city" and done(pc, "breakfast")
                      and not done(pc, "errand")),
          _errand),
-    Beat("word", "Ask him what the trade calls it",
+    Beat("word", "Ask him what the trade calls it",  # stylecheck: allow — quest step
          lambda pc: (pc.location == "old_city" and done(pc, "errand")
                      and not done(pc, "word")),
          _word),
